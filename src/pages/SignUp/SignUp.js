@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';   // ← line 15: useNavigate
 import { useAuth } from '../../context/AuthContext';
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -7,10 +7,12 @@ const phoneRe = /^[0-9+\-\s()]{8,}$/;
 
 export default function SignUp(){
   const { signup } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useNavigate();                       // ← line 15: declared
+
   const [form, setForm] = useState({ role:'', name:'', phone:'', email:'', password:'' });
   const [touched, setTouched] = useState({});
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const errors = useMemo(() => {
     const e = {};
@@ -24,19 +26,43 @@ export default function SignUp(){
 
   const hasErrors = Object.keys(errors).length > 0;
   const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
-  const onBlur = (e) => setTouched((t) => ({ ...t, [e.target.name]: true }));
+  const onBlur =   (e) => setTouched((t) => ({ ...t, [e.target.name]: true }));
 
-  const onSubmit = (e) => {
+  // line 18: register() handles form submission + (optional) API call to your server
+  async function register(e){
     e.preventDefault();
     setTouched({ role:true, name:true, phone:true, email:true, password:true });
     if (hasErrors) return;
-    try{
-      signup({ ...form, address:'', age:'', bloodGroup:'', medicalRecords:'' });
-      navigate('/appointments');
-    }catch(err){
+
+    try {
+      setLoading(true);
+
+      // ---- Example server call (replace URL with your API) ----
+      // const res = await fetch('/api/auth/register', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(form)
+      // });
+      // if (!res.ok) throw new Error('Signup failed');
+      // const data = await res.json(); // { user: {...} }
+
+      // For now, persist locally via AuthContext (works w/out backend)
+      signup({
+        ...form,
+        address: '',
+        age: '',
+        bloodGroup: '',
+        medicalRecords: ''
+      });
+
+      // line 45: navigate to Home after successful signup
+      navigate('/');                                     // ← sends user to Home
+    } catch (err) {
       setError(err.message || 'Sign-up failed.');
+    } finally {
+      setLoading(false);
     }
-  };
+  }
 
   return (
     <section className="py-6">
@@ -45,7 +71,7 @@ export default function SignUp(){
         <p className="muted">Create your account to begin booking appointments.</p>
         {error && <div className="card" style={{borderColor:'#fecaca', background:'#fee2e2', color:'#991b1b', marginTop:10}}> {error} </div>}
 
-        <form className="mt-3" onSubmit={onSubmit} noValidate style={{display:'grid', gap:12}}>
+        <form className="mt-3" onSubmit={register} noValidate style={{display:'grid', gap:12}}>
           <label htmlFor="role">Role</label>
           <select id="role" name="role" className="input" value={form.role} onChange={onChange} onBlur={onBlur}>
             <option value="">Select your role</option>
@@ -72,8 +98,17 @@ export default function SignUp(){
           {touched.password && errors.password && <small style={{color:'#b91c1c'}}>{errors.password}</small>}
 
           <div className="row mt-2">
-            <button className="btn btn-primary" type="submit" disabled={hasErrors}>Submit</button>
-            <button className="btn btn-outline" type="reset" onClick={() => { setForm({role:'',name:'',phone:'',email:'',password:''}); setTouched({}); setError(''); }}>Reset</button>
+            <button className="btn btn-primary" type="submit" disabled={loading || hasErrors}>
+              {loading ? 'Creating account…' : 'Submit'}
+            </button>
+            <button
+              className="btn btn-outline"
+              type="reset"
+              onClick={() => { setForm({role:'',name:'',phone:'',email:'',password:''}); setTouched({}); setError(''); }}
+              disabled={loading}
+            >
+              Reset
+            </button>
           </div>
         </form>
 
