@@ -1,39 +1,27 @@
-// src/components/ReviewForm/ReviewForm.js
 import React, { useEffect, useMemo, useState } from "react";
 import "./ReviewForm.css";
 
 export default function ReviewForm({ rows }) {
   const storageKey = "stayhealthy_reviews_v2";
 
-  const defaultRows = useMemo(
-    () => [
-      { id: "1", doctorName: "Dr. John Doe", specialty: "Cardiology" },
-      { id: "2", doctorName: "Dr. Jane Smith", specialty: "Dermatology" },
-    ],
-    []
-  );
+  const defaultRows = useMemo(() => [
+    { id: "1", doctorName: "Dr. John Doe", specialty: "Cardiology" },
+    { id: "2", doctorName: "Dr. Jane Smith", specialty: "Dermatology" },
+  ], []);
 
   const [data] = useState(rows && rows.length ? rows : defaultRows);
-
   const [reviews, setReviews] = useState({});
   const [openId, setOpenId] = useState(null);
   const [formName, setFormName] = useState("");
   const [formComments, setFormComments] = useState("");
   const [formRating, setFormRating] = useState(0);
 
-  // Load saved reviews
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) setReviews(JSON.parse(raw));
-    } catch {}
+    try { const raw = localStorage.getItem(storageKey); if (raw) setReviews(JSON.parse(raw)); } catch {}
   }, []);
 
-  // Persist reviews
   useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(reviews));
-    } catch {}
+    try { localStorage.setItem(storageKey, JSON.stringify(reviews)); } catch {}
   }, [reviews]);
 
   const openForm = (id) => {
@@ -70,7 +58,6 @@ export default function ReviewForm({ rows }) {
     closeForm();
   };
 
-  // ✅ The return must be inside the component
   return (
     <section className="rf-wrap">
       <h2 className="rf-title">Reviews</h2>
@@ -110,7 +97,7 @@ export default function ReviewForm({ rows }) {
                         <div className="rf-review-chip">
                           <div className="rf-review-head">
                             <span className="rf-review-name">{r.reviewerName}</span>
-                            <span className="rf-review-stars">
+                            <span className="rf-review-stars" aria-label={`${r.rating} out of 5`}>
                               {Array.from({ length: 5 }).map((_, i) => (
                                 <span key={i} className={`rf-star ${i < r.rating ? "full" : ""}`}>★</span>
                               ))}
@@ -130,7 +117,6 @@ export default function ReviewForm({ rows }) {
         </div>
       </div>
 
-      {/* Modal */}
       {openId && (
         <div className="rf-modal" role="dialog" aria-modal="true">
           <div className="rf-modal-card">
@@ -142,39 +128,25 @@ export default function ReviewForm({ rows }) {
             <form className="rf-form" onSubmit={handleSubmit}>
               <div className="rf-row">
                 <label className="rf-label" htmlFor="rf-name">Name:</label>
-                <input
-                  id="rf-name"
-                  className="rf-input"
-                  placeholder="Your name"
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                />
+                <input id="rf-name" className="rf-input" placeholder="Your name" value={formName} onChange={(e) => setFormName(e.target.value)} />
               </div>
 
               <div className="rf-row">
                 <label className="rf-label" htmlFor="rf-review">Review:</label>
-                <textarea
-                  id="rf-review"
-                  className="rf-textarea"
-                  rows={4}
-                  placeholder="Write your experience…"
-                  value={formComments}
-                  onChange={(e) => setFormComments(e.target.value)}
-                />
+                <textarea id="rf-review" className="rf-textarea" rows={4} placeholder="Write your experience…" value={formComments} onChange={(e) => setFormComments(e.target.value)} />
               </div>
 
               <div className="rf-row">
                 <label className="rf-label">Rating:</label>
                 <div className="rf-stars-picker">
-                  {[1, 2, 3, 4, 5].map((n) => (
+                  {[1,2,3,4,5].map((n) => (
                     <button
                       key={n}
                       type="button"
                       className={`rf-star-btn ${n <= formRating ? "on" : ""}`}
                       onClick={() => setFormRating(n)}
-                    >
-                      ★
-                    </button>
+                      aria-label={`${n} star${n>1?"s":""}`}
+                    >★</button>
                   ))}
                 </div>
               </div>
