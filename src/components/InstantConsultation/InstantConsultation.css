@@ -34,3 +34,19 @@
     text-align: left;
     font-size: 15px;
 }
+/* Force show date + select in the booking modal */
+.booking-form input[type="date"],
+.booking-form select,
+.form-input[type="date"],
+.form-input + select {
+  display: block !important;
+  visibility: visible !important;
+  height: auto !important;
+}
+
+/* Make sure nothing collapses the last form rows */
+.booking-form .form-row {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 10px;
+}

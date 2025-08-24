@@ -19,6 +19,9 @@ import FindDoctorSearch from './components/FindDoctorSearch/FindDoctorSearch';
 import DoctorCardsGrid from './components/DoctorCard/DoctorCard';
 import AppointmentForm from './components/AppointmentForm/AppointmentForm';
 
+// NEW: Booking flow that integrates FindDoctorSearch + DoctorCard
+import BookingConsultation from './components/BookingConsultation';
+
 export default function App() {
   return (
     <AuthProvider>
@@ -48,7 +51,13 @@ export default function App() {
             }
           />
 
-          {/* Booking flow: form opened from DoctorCard’s button */}
+          {/* Booking flow: standalone page using DoctorCard + FindDoctorSearch */}
+          {/* Make it protected if you only want logged-in users to book:
+              <Route path="/book" element={<PrivateRoute><BookingConsultation /></PrivateRoute>} />
+          */}
+          <Route path="/book" element={<BookingConsultation />} />
+
+          {/* Legacy direct booking form (if still used elsewhere) */}
           <Route
             path="/appointments/new"
             element={
@@ -63,7 +72,7 @@ export default function App() {
           <Route path="/find-doctor" element={<FindDoctorSearch />} />
           <Route path="/doctors" element={<DoctorCardsGrid />} />
 
-          {/* Fallback: could add a 404 page here if you have one */}
+          {/* Fallback: add a 404 if you have one */}
           {/* <Route path="*" element={<NotFound />} /> */}
         </Routes>
       </main>
