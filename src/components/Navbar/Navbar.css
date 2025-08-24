@@ -1,0 +1,27 @@
+/* Welcome text near Logout */
+.auth .muted {
+  /* appearance */
+  color: #374151;            /* darker than before so it reads as text */
+  font-weight: 600;
+  font-size: 14px;
+
+  /* alignment + spacing */
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  margin-right: 12px;
+  letter-spacing: .1px;
+  white-space: nowrap;
+  text-transform: capitalize; /* makes "signup" render as "Signup" */
+}
+
+/* optional: tiny dot before the name (remove if you don't want it) */
+.auth .muted::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #1a73e8;
+  display: inline-block;
+  margin-right: 8px;
+}

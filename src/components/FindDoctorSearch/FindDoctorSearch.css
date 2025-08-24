@@ -1,89 +1,44 @@
-.fds-root {
-  max-width: 520px;
-  margin: 12px 0;
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-  position: relative;
-}
-
-.fds-searchbar {
-  display: flex;
-  align-items: stretch;
-  border: 1px solid #dfe5ee;
-  border-radius: 10px;
-  overflow: hidden;
-  background: #fff;
-}
-
-.fds-input {
-  flex: 1;
-  border: 0;
-  outline: none;
-  padding: 12px 14px;
-  font-size: 15px;
-}
-
-.fds-iconbtn {
-  width: 46px;
-  border: 0;
-  border-left: 1px solid #e5e9f0;
-  background: #fbfcfe;
-  cursor: pointer;
-  font-size: 18px;
-}
-
+/* Filter chips container spacing */
 .fds-filters {
   display: flex;
-  gap: 8px;
-  margin: 8px 4px 6px;
+  gap: 12px;                 /* a bit more room */
+  margin: 10px 4px 6px;
   flex-wrap: wrap;
 }
 
+/* Chip */
 .fds-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border: 1px solid #dfe5ee;
-  border-radius: 999px;
+  gap: 8px;                  /* space between checkbox and label */
+  padding: 10px 14px;        /* taller pill */
+  border: 1px solid #dbe2ea; /* slightly softer border */
+  border-radius: 9999px;
   background: #fff;
-  color: #123;
-  font-size: 13px;
+  color: #0f172a;
+  font-size: 14px;
+  box-shadow: 0 1px 0 rgba(0,0,0,.02);
   user-select: none;
-}
-.fds-chip input { accent-color: #1a73e8; }
-
-.fds-list {
-  position: absolute;
-  z-index: 40;
-  top: 74px;
-  left: 0;
-  right: 0;
-  background: #fff;
-  border: 1px solid #dfe5ee;
-  border-radius: 10px;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-  overflow: hidden;
-}
-
-.fds-empty {
-  padding: 14px;
-  text-align: center;
-  color: #667085;
-  background: #fafbff;
-}
-
-.fds-row {
-  display: grid;
-  grid-template-columns: 36px 1fr 120px;
-  align-items: center;
-  gap: 6px;
-  padding: 12px 10px;
-  border-top: 1px solid #f0f3f7;
   cursor: pointer;
 }
 
-.fds-row:first-child { border-top: 0; }
-.fds-row:hover, .fds-row.is-active { background: #f5f8ff; }
-.fds-lens { text-align: center; color: #7a8599; }
-.fds-text { font-weight: 600; color: #0f172a; }
-.fds-tag  { justify-self: end; color: #7a8599; font-size: 12px; letter-spacing: .02em; }
+.fds-chip:hover {
+  background: #f6faff;
+  border-color: #cfe0ff;
+}
+
+/* Checkbox sizing + alignment */
+.fds-chip input {
+  width: 16px;
+  height: 16px;
+  margin: 0;                 /* remove default offset */
+  accent-color: #1a73e8;     /* blue checkmark */
+}
+
+/* Label text inside chip */
+.fds-chip span {
+  font-weight: 700;
+  color: #334155;
+  line-height: 1.1;
+  white-space: normal;       /* allow wrap: "Near Me" on two lines like mock */
+}
