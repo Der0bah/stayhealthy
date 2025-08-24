@@ -1,115 +1,87 @@
+import { useEffect, useMemo, useState } from "react";
 
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import "./DoctorCard.css";
+export default function DoctorCard({ doctor, onBooked, onCancelled }) {
+  const [showForm, setShowForm] = useState(false);
+  const [appointments, setAppointments] = useState([]);
+  const [form, setForm] = useState({ name: "", phone: "", date: "", timeSlot: "" });
 
-export function DoctorCard({
-  name,
-  specialty,
-  experienceYears,
-  rating = 5,
-  image,
-  profile,
-}) {
-  const navigate = useNavigate();
+  const storageKey = `appointments_${doctor?.id ?? "unknown"}`;
 
-  const stars = Array.from({ length: 5 }).map((_, i) => (
-    <span
-      key={i}
-      className={`dc-star ${i < rating ? "is-on" : ""}`}
-      aria-hidden="true"
-    >
-      ★
-    </span>
-  ));
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) setAppointments(JSON.parse(raw));
+    } catch {}
+  }, [storageKey]);
 
-  const handleBook = () => {
-    // Send doctor info to the new appointment form
-    navigate("/appointments/new", { state: { doctor: name, specialty } });
+  const persist = (next) => {
+    setAppointments(next);
+    try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+  };
+
+  const today = new Date().toISOString().slice(0, 10);
+  const slots = useMemo(() => [
+    "09:00 – 09:30",
+    "09:30 – 10:00",
+    "10:00 – 10:30",
+    "14:00 – 14:30",
+    "14:30 – 15:00",
+    "15:00 – 15:30",
+  ], []);
+
+  const handleBook = (e) => {
+    e.preventDefault();
+    if (!form.name || !form.phone || !form.date || !form.timeSlot) return;
+    const appt = { id: crypto.randomUUID(), doctorId: doctor?.id, ...form, createdAt: Date.now() };
+    persist([appt, ...appointments]);
+    setShowForm(false);
+    setForm({ name: "", phone: "", date: "", timeSlot: "" });
+    onBooked?.(appt);
+  };
+
+  const handleCancel = (id) => {
+    persist(appointments.filter((a) => a.id !== id));
+    onCancelled?.({ id, doctorId: doctor?.id });
   };
 
   return (
-    <article className="dc-card" role="region" aria-label={`Doctor ${name}`}>
-      <div className="dc-card-inner">
-        <div className="dc-avatar">
-          {image ? (
-            <img src={image} alt={`Dr. ${name}`} />
-          ) : (
-            <div className="dc-avatar-fallback" aria-hidden>
-              👨‍⚕️
-            </div>
-          )}
-        </div>
-
-        <div className="dc-info">
-          <h3 className="dc-name">Dr. {name}</h3>
-          <div className="dc-specialty">{specialty}</div>
-          <div className="dc-exp">
-            <strong>{experienceYears}</strong> years experience
-          </div>
-          <div className="dc-ratings">
-            <span className="dc-ratings-label">Ratings:</span> {stars}
-          </div>
-          {profile && <p className="dc-profile">{profile}</p>}
+    <div className="doctor-card">
+      <div className="doctor-card-header">
+        <img src={doctor?.avatarUrl} alt={doctor?.name} className="doctor-card-avatar"/>
+        <div>
+          <h3>{doctor?.name}</h3>
+          <div>{doctor?.specialty} • {doctor?.experienceYears} yrs</div>
+          <div>⭐ {doctor?.rating}</div>
         </div>
       </div>
 
-      <button type="button" className="dc-book-btn" onClick={handleBook}>
-        Book Appointment
-        <br />
-        <span className="dc-book-sub">No Booking Fee</span>
-      </button>
-    </article>
-  );
-}
-
-export default function DoctorCardsGrid() {
-  const doctors = [
-    {
-      name: "Jiao Yang",
-      specialty: "Dentist",
-      experienceYears: 9,
-      rating: 5,
-      image: "",
-      profile:
-        "Gentle dentist focused on preventive care and minimally invasive treatments.",
-    },
-    {
-      name: "Denis Raj",
-      specialty: "Dentist",
-      experienceYears: 24,
-      rating: 5,
-      image: "",
-      profile:
-        "Senior dentist specializing in cosmetic dentistry and complex restorations.",
-    },
-    {
-      name: "Lyn Christie",
-      specialty: "Dentist",
-      experienceYears: 11,
-      rating: 4,
-      image: "",
-      profile:
-        "Family dentist with strong emphasis on patient education and comfort.",
-    },
-  ];
-
-  return (
-    <section className="dc-grid-wrap">
-      <div className="dc-grid-header">
-        <h2>
-          <strong>{doctors.length} doctors</strong> available in
-        </h2>
-        <p className="dc-grid-sub">
-          Book appointments with minimum wait-time &amp; verified doctor details
-        </p>
+      <div className="doctor-card-options-container">
+        <button onClick={() => setShowForm(true)}>Book Appointment</button>
       </div>
 
-      <div className="dc-grid">
-        {doctors.map((d) => (
-          <DoctorCard key={d.name} {...d} />
-        ))}
-      </div>
-    </section>
+      {appointments.length > 0 && (
+        <ul>
+          {appointments.map((a) => (
+            <li key={a.id}>
+              {a.date} • {a.timeSlot} • {a.name}
+              <button onClick={() => handleCancel(a.id)}>Cancel</button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {showForm && (
+        <form onSubmit={handleBook}>
+          <input placeholder="Name" value={form.name} onChange={e => setForm(f => ({...f, name:e.target.value}))}/>
+          <input placeholder="Phone" value={form.phone} onChange={e => setForm(f => ({...f, phone:e.target.value}))}/>
+          <input type="date" min={today} value={form.date} onChange={e => setForm(f => ({...f, date:e.target.value}))}/>
+          <select value={form.timeSlot} onChange={e => setForm(f => ({...f, timeSlot:e.target.value}))}>
+            <option value="">Select a slot</option>
+            {slots.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <button type="submit">Book Now</button>
+        </form>
+      )}
+    </div>
   );
 }
