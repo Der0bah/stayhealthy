@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-const AuthCtx = createContext(null);
-export const useAuth = () => useContext(AuthCtx);
+const AuthContext = createContext(null);
+
+// ✅ Declare the hook ONLY ONCE
+export const useAuth = () => useContext(AuthContext);
 
 const LS_KEY = 'app_auth_user';
 
-export default function AuthProvider({ children }){
+export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -19,6 +21,8 @@ export default function AuthProvider({ children }){
   }, [user]);
 
   const signup = (profile) => setUser(profile);
+
+  // simple example login that matches saved signup email
   const login = ({ email }) => {
     const saved = localStorage.getItem(LS_KEY);
     if (!saved) throw new Error('No account found. Please sign up.');
@@ -26,12 +30,13 @@ export default function AuthProvider({ children }){
     if (savedUser.email !== email) throw new Error('Email does not match any account.');
     setUser(savedUser);
   };
+
   const logout = () => setUser(null);
   const updateProfile = (updates) => setUser((u) => ({ ...u, ...updates }));
 
   return (
-    <AuthCtx.Provider value={{ user, signup, login, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, signup, login, logout, updateProfile }}>
       {children}
-    </AuthCtx.Provider>
+    </AuthContext.Provider>
   );
 }

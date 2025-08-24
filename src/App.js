@@ -10,6 +10,8 @@ import Login from './pages/Login/Login';
 import SignUp from './pages/SignUp/SignUp';
 import Appointment from './pages/Appointment/Appointment';
 import Profile from './pages/Profile/Profile';
+import InstantConsultation from './components/InstantConsultation/InstantConsultation';
+
 
 export default function App(){
   return (
