@@ -1,173 +1,138 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useMemo, useState } from "react";
+import "./AppointmentForm.css";
 
-/**
- * Appointment booking form
- * - Reads doctor info from location.state (sent by DoctorCard button)
- * - Validates: name, phone, date (not past), time slot
- * - Blocks submit until valid
- */
-const phoneRe = /^[0-9+\-\s()]{8,}$/;
-
-export default function AppointmentForm() {
-  const navigate = useNavigate();
-  const { state } = useLocation() || {};
-  const doctorName = state?.doctor || "Selected Doctor";
-  const specialty = state?.specialty || "";
-
+export default function AppointmentForm({ isOpen, doctor, onClose, onSubmit }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [date, setDate] = useState("");
-  const [slot, setSlot] = useState("");
-  const [touched, setTouched] = useState({});
-  const [submitting, setSubmitting] = useState(false);
-  const [notice, setNotice] = useState("");
+  const [appointmentDate, setAppointmentDate] = useState("");
+  const [appointmentTime, setAppointmentTime] = useState("");
+  const [timeSlot, setTimeSlot] = useState("");
+  const [futureDate, setFutureDate] = useState(""); // “book for coming dates”
 
-  // time slot options – adjust as needed
-  const slots = [
-    "09:00 – 09:30",
-    "09:30 – 10:00",
-    "10:00 – 10:30",
-    "11:00 – 11:30",
-    "14:00 – 14:30",
-    "15:30 – 16:00",
-  ];
+  const today = new Date().toISOString().slice(0, 10);
 
-  // min date = today for “coming dates”
-  const todayStr = useMemo(() => {
-    const d = new Date();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    const yyyy = d.getFullYear();
-    return `${yyyy}-${mm}-${dd}`;
-  }, []);
+  // Example slots; adjust as needed or replace with API data
+  const slots = useMemo(
+    () => [
+      "09:00 – 09:30",
+      "09:30 – 10:00",
+      "10:00 – 10:30",
+      "14:00 – 14:30",
+      "14:30 – 15:00",
+      "15:00 – 15:30",
+    ],
+    []
+  );
 
-  // derived errors
-  const errors = useMemo(() => {
-    const e = {};
-    if (!name.trim()) e.name = "Name is required.";
-    if (!phoneRe.test(phone)) e.phone = "Enter a valid phone number.";
-    if (!date) e.date = "Please select a date.";
-    else if (date < todayStr) e.date = "Date cannot be in the past.";
-    if (!slot) e.slot = "Please choose a time slot.";
-    return e;
-  }, [name, phone, date, slot, todayStr]);
+  if (!isOpen) return null;
 
-  const hasErrors = Object.keys(errors).length > 0;
-
-  const onBlur = (e) => setTouched((t) => ({ ...t, [e.target.name]: true }));
-
-  const submit = async (e) => {
-    e.preventDefault();
-    setTouched({ name: true, phone: true, date: true, slot: true });
-    if (hasErrors) return;
-
-    try {
-      setSubmitting(true);
-      // TODO: call your backend API here
-      // await fetch('/api/appointments', { method:'POST', ... })
-
-      // Simple success notice
-      setNotice(
-        `Appointment booked with Dr. ${doctorName} on ${date} at ${slot}.`
-      );
-
-      // Optionally navigate to a confirmation page after a pause
-      // setTimeout(() => navigate('/profile'), 1000);
-    } catch (err) {
-      setNotice("Failed to book appointment. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
+  const validate = () => {
+    // Basic validation — expand as needed
+    if (!name.trim()) return "Please enter patient name.";
+    if (!phone.trim()) return "Please enter phone number.";
+    if (!appointmentDate && !futureDate)
+      return "Select Appointment Date or Future Date.";
+    if (appointmentDate && appointmentDate < today)
+      return "Appointment date cannot be in the past.";
+    if (futureDate && futureDate < today)
+      return "Future date cannot be in the past.";
+    if (!appointmentTime && !timeSlot)
+      return "Select Appointment Time or a Time Slot.";
+    return null;
   };
 
-  useEffect(() => {
-    // scroll to top on mount
-    window.scrollTo(0, 0);
-  }, []);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const err = validate();
+    if (err) {
+      alert(err);
+      return;
+    }
+    const payload = {
+      id: crypto.randomUUID(),
+      doctorId: doctor?.id,
+      doctorName: doctor?.name,
+      name: name.trim(),
+      phone: phone.trim(),
+      // Use futureDate if provided; otherwise appointmentDate
+      date: (futureDate || appointmentDate),
+      time: appointmentTime || null,
+      timeSlot: timeSlot || null,
+      createdAt: Date.now(),
+    };
+    onSubmit?.(payload);
+    onClose?.();
+    // reset
+    setName("");
+    setPhone("");
+    setAppointmentDate("");
+    setAppointmentTime("");
+    setTimeSlot("");
+    setFutureDate("");
+  };
 
   return (
-    <section className="py-6">
-      <div className="container" style={{ maxWidth: 520 }}>
-        {/* Doctor header */}
-        <h2 style={{ textAlign: "center", marginBottom: 0 }}>
-          Dr. {doctorName}
-        </h2>
-        {specialty && (
-          <div style={{ textAlign: "center", color: "#374151" }}>{specialty}</div>
-        )}
-        <div
-          style={{
-            textAlign: "center",
-            color: "#9aa3af",
-            fontWeight: 700,
-            marginTop: 4,
-            marginBottom: 8,
-          }}
-        >
-          Ratings: <span style={{ color: "#f4c430" }}>★ ★ ★ ★ ★</span>
-        </div>
+    <div className="booking-form bg-white rounded-xl shadow p-5">
+      <h3 className="text-lg font-semibold mb-2">
+        {doctor?.name} {doctor?.specialty ? `• ${doctor.specialty}` : ""}
+      </h3>
 
-        <form className="card" onSubmit={submit} noValidate style={{ padding: 16 }}>
-          <label htmlFor="name">Name:</label>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        {/* Patient Name */}
+        <div className="form-row">
+          <label className="form-label">Name:</label>
           <input
-            id="name"
-            name="name"
-            className="input"
-            placeholder="Enter your full name"
+            className="form-input"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            onBlur={onBlur}
+            placeholder="Patient name"
+            required
           />
-          {touched.name && errors.name && (
-            <small style={{ color: "#b91c1c" }}>{errors.name}</small>
-          )}
+        </div>
 
-          <div style={{ height: 10 }} />
-
-          <label htmlFor="phone">Phone Number:</label>
+        {/* Phone */}
+        <div className="form-row">
+          <label className="form-label">Phone Number:</label>
           <input
-            id="phone"
-            name="phone"
-            className="input"
-            placeholder="Enter your phone number"
+            className="form-input"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            onBlur={onBlur}
+            inputMode="tel"
+            placeholder="(xx) xxxxx-xxxx"
+            required
           />
-          {touched.phone && errors.phone && (
-            <small style={{ color: "#b91c1c" }}>{errors.phone}</small>
-          )}
+        </div>
 
-          <div style={{ height: 10 }} />
-
-          {/* Date for coming days */}
-          <label htmlFor="date">Date of Appointment:</label>
+        {/* Appointment Date */}
+        <div className="form-row">
+          <label className="form-label">Date of Appointment:</label>
           <input
-            id="date"
-            name="date"
             type="date"
-            className="input"
-            min={todayStr}         // ⬅ ensure coming dates only
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            onBlur={onBlur}
+            className="form-input"
+            value={appointmentDate}
+            onChange={(e) => setAppointmentDate(e.target.value)}
+            min={today}
           />
-          {touched.date && errors.date && (
-            <small style={{ color: "#b91c1c" }}>{errors.date}</small>
-          )}
+        </div>
 
-          <div style={{ height: 10 }} />
+        {/* Appointment Time (free time) */}
+        <div className="form-row">
+          <label className="form-label">Appointment Time (HH:MM):</label>
+          <input
+            type="time"
+            className="form-input"
+            value={appointmentTime}
+            onChange={(e) => setAppointmentTime(e.target.value)}
+          />
+        </div>
 
-          {/* Time slot selection */}
-          <label htmlFor="slot">Book Time Slot:</label>
+        {/* ➕ Book Time Slot (extra element requested) */}
+        <div className="form-row">
+          <label className="form-label">Book Time Slot:</label>
           <select
-            id="slot"
-            name="slot"
-            className="input"
-            value={slot}
-            onChange={(e) => setSlot(e.target.value)}
-            onBlur={onBlur}
+            className="form-input"
+            value={timeSlot}
+            onChange={(e) => setTimeSlot(e.target.value)}
           >
             <option value="">Select a time slot</option>
             {slots.map((s) => (
@@ -176,26 +141,33 @@ export default function AppointmentForm() {
               </option>
             ))}
           </select>
-          {touched.slot && errors.slot && (
-            <small style={{ color: "#b91c1c" }}>{errors.slot}</small>
-          )}
+        </div>
 
-          <div style={{ height: 16 }} />
+        {/* ➕ Book for specified future date (extra element requested) */}
+        <div className="form-row">
+          <label className="form-label">Book for a future date:</label>
+          <input
+            type="date"
+            className="form-input"
+            value={futureDate}
+            onChange={(e) => setFutureDate(e.target.value)}
+            min={today}
+          />
+          <small className="text-muted">
+            Optional — use this to schedule for upcoming dates. If you fill this,
+            it overrides “Date of Appointment”.
+          </small>
+        </div>
 
-          <button className="btn btn-primary" type="submit" disabled={submitting || hasErrors}>
-            {submitting ? "Booking…" : "Book Now"}
+        <div className="flex gap-2 justify-end pt-2">
+          <button type="button" className="btn btn-ghost" onClick={onClose}>
+            Cancel
           </button>
-        </form>
-
-        {notice && (
-          <div
-            className="card"
-            style={{ marginTop: 12, borderColor: "#d1fae5", background: "#ecfdf5", color: "#065f46" }}
-          >
-            {notice}
-          </div>
-        )}
-      </div>
-    </section>
+          <button type="submit" className="btn btn-primary">
+            Book Now
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }

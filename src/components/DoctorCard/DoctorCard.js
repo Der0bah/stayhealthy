@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+// src/components/DoctorCard/DoctorCard.js
+import React, { useEffect, useMemo, useState } from "react";
+import AppointmentForm from "../AppointmentForm/AppointmentForm";
 
-export default function DoctorCard({ doctor, onBooked, onCancelled }) {
-  const [showForm, setShowForm] = useState(false);
+export default function DoctorCard({ doctor }) {
+  const [open, setOpen] = useState(false);
   const [appointments, setAppointments] = useState([]);
-  const [form, setForm] = useState({ name: "", phone: "", date: "", timeSlot: "" });
 
   const storageKey = `appointments_${doctor?.id ?? "unknown"}`;
 
@@ -19,68 +20,67 @@ export default function DoctorCard({ doctor, onBooked, onCancelled }) {
     try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
   };
 
-  const today = new Date().toISOString().slice(0, 10);
-  const slots = useMemo(() => [
-    "09:00 – 09:30",
-    "09:30 – 10:00",
-    "10:00 – 10:30",
-    "14:00 – 14:30",
-    "14:30 – 15:00",
-    "15:00 – 15:30",
-  ], []);
-
-  const handleBook = (e) => {
-    e.preventDefault();
-    if (!form.name || !form.phone || !form.date || !form.timeSlot) return;
-    const appt = { id: crypto.randomUUID(), doctorId: doctor?.id, ...form, createdAt: Date.now() };
-    persist([appt, ...appointments]);
-    setShowForm(false);
-    setForm({ name: "", phone: "", date: "", timeSlot: "" });
-    onBooked?.(appt);
+  const handleBooked = (payload) => {
+    persist([payload, ...appointments]);
   };
 
   const handleCancel = (id) => {
     persist(appointments.filter((a) => a.id !== id));
-    onCancelled?.({ id, doctorId: doctor?.id });
   };
 
   return (
     <div className="doctor-card">
+      {/* Card header (avatar, name, specialty, rating, etc.) */}
       <div className="doctor-card-header">
-        <img src={doctor?.avatarUrl} alt={doctor?.name} className="doctor-card-avatar"/>
+        <div className="doctor-card-avatar" aria-hidden />
         <div>
-          <h3>{doctor?.name}</h3>
-          <div>{doctor?.specialty} • {doctor?.experienceYears} yrs</div>
-          <div>⭐ {doctor?.rating}</div>
+          <h3 className="doctor-card-name">{doctor?.name}</h3>
+          <div className="doctor-card-sub">
+            {doctor?.specialty} • {doctor?.experienceYears} years
+          </div>
+          <div className="doctor-card-rating">Ratings: ⭐⭐⭐⭐</div>
         </div>
       </div>
 
+      {/* Same container class used by IC variant */}
       <div className="doctor-card-options-container">
-        <button onClick={() => setShowForm(true)}>Book Appointment</button>
+        <button className="btn btn-primary" onClick={() => setOpen(true)}>
+          Book Appointment
+        </button>
       </div>
 
+      {/* Existing appointments list with cancel */}
       {appointments.length > 0 && (
-        <ul>
-          {appointments.map((a) => (
-            <li key={a.id}>
-              {a.date} • {a.timeSlot} • {a.name}
-              <button onClick={() => handleCancel(a.id)}>Cancel</button>
-            </li>
-          ))}
-        </ul>
+        <div className="doctor-card-appointments">
+          <h4>Your Appointments</h4>
+          <ul className="doctor-card-appointments-list">
+            {appointments.map((a) => (
+              <li key={a.id} className="doctor-card-appointment-item">
+                <span>
+                  <strong>{a.date}</strong>
+                  {a.time ? ` • ${a.time}` : ""}
+                  {a.timeSlot ? ` • ${a.timeSlot}` : ""}
+                  {a.name ? ` • ${a.name}` : ""}
+                </span>
+                <button className="btn btn-ghost btn-sm" onClick={() => handleCancel(a.id)}>
+                  Cancel
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
-      {showForm && (
-        <form onSubmit={handleBook}>
-          <input placeholder="Name" value={form.name} onChange={e => setForm(f => ({...f, name:e.target.value}))}/>
-          <input placeholder="Phone" value={form.phone} onChange={e => setForm(f => ({...f, phone:e.target.value}))}/>
-          <input type="date" min={today} value={form.date} onChange={e => setForm(f => ({...f, date:e.target.value}))}/>
-          <select value={form.timeSlot} onChange={e => setForm(f => ({...f, timeSlot:e.target.value}))}>
-            <option value="">Select a slot</option>
-            {slots.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <button type="submit">Book Now</button>
-        </form>
+      {/* Booking Form (modal or inline) */}
+      {open && (
+        <div className="doctor-card-booking-modal">
+          <AppointmentForm
+            isOpen={open}
+            doctor={doctor}
+            onClose={() => setOpen(false)}
+            onSubmit={handleBooked}
+          />
+        </div>
       )}
     </div>
   );

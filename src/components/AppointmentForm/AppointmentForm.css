@@ -1,0 +1,7 @@
+.booking-form input[type="date"],
+.booking-form input[type="time"],
+.booking-form select {
+  display: block !important;
+  visibility: visible !important;
+}
+.booking-form .form-row { display: grid; gap: 6px; margin-bottom: 10px; }
