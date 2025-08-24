@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import AppointmentForm from "../../AppointmentForm/AppointmentForm";
 import "../../DoctorCard/doctor-card.css";
+import { useNotification } from "../../../context/NotificationContext";
 
 export default function DoctorCardIC({ doctor = {} }) {
+  const notify = useNotification();
   const [open, setOpen] = useState(false);
   const [appointments, setAppointments] = useState([]);
 
@@ -22,8 +24,23 @@ export default function DoctorCardIC({ doctor = {} }) {
   }, [storageKey]);
 
   const persist = (next) => { setAppointments(next); try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {} };
-  const handleBooked = (payload) => persist([payload, ...appointments]);
-  const handleCancel = (apptId) => persist(appointments.filter(a => a.id !== apptId));
+
+  const handleBooked = (payload) => {
+    persist([payload, ...appointments]);
+    notify.show?.({
+      doctorName: name,
+      specialty,
+      name: payload.name,
+      phone: payload.phone,
+      date: payload.date,
+      timeSlot: payload.timeSlot,
+    });
+  };
+
+  const handleCancel = (apptId) => {
+    persist(appointments.filter((a) => a.id !== apptId));
+    notify.hide?.();
+  };
 
   const initials = useMemo(() => {
     const parts = (name || "").split(" ").filter(Boolean);
@@ -105,7 +122,7 @@ export default function DoctorCardIC({ doctor = {} }) {
   );
 }
 
-/* Reuse helpers */
+/* helpers for stars */
 function calcStars(value) {
   const out = [];
   const v = Math.max(0, Math.min(5, value));

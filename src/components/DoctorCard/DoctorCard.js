@@ -1,14 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import AppointmentForm from "../AppointmentForm/AppointmentForm";
 import "./doctor-card.css";
+import { useNotification } from "../../context/NotificationContext";
 
 /**
- * Expected doctor shape (safe defaults if missing):
- * {
- *   id, name, specialty, experienceYears, rating, reviewsCount, avatarUrl
- * }
+ * Doctor card with global notification hooks
  */
 export default function DoctorCard({ doctor = {} }) {
+  const notify = useNotification();
   const [open, setOpen] = useState(false);
   const [appointments, setAppointments] = useState([]);
 
@@ -22,7 +21,6 @@ export default function DoctorCard({ doctor = {} }) {
     avatarUrl = "",
   } = doctor;
 
-  // Local storage for booked appts
   const storageKey = `appointments_${id}`;
   useEffect(() => {
     try {
@@ -36,10 +34,26 @@ export default function DoctorCard({ doctor = {} }) {
     try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
   };
 
-  const handleBooked = (payload) => persist([payload, ...appointments]);
-  const handleCancel = (apptId) => persist(appointments.filter(a => a.id !== apptId));
+  const handleBooked = (payload) => {
+    persist([payload, ...appointments]);
 
-  // Avatar: initials fallback
+    // Build a friendly object for the Notification
+    notify.show?.({
+      doctorName: name,
+      specialty,
+      name: payload.name,
+      phone: payload.phone,
+      date: payload.date,
+      timeSlot: payload.timeSlot,
+    });
+  };
+
+  const handleCancel = (apptId) => {
+    persist(appointments.filter((a) => a.id !== apptId));
+    notify.hide?.();
+  };
+
+  // Avatar initials fallback
   const initials = useMemo(() => {
     const parts = (name || "").split(" ").filter(Boolean);
     const first = parts[0]?.[0] || "D";
@@ -48,7 +62,7 @@ export default function DoctorCard({ doctor = {} }) {
   }, [name]);
 
   const normalizeSrc = (src) => {
-    if (!src) return null; // force initials mode
+    if (!src) return null;
     if (/^https?:\/\//i.test(src)) return src;
     return `${process.env.PUBLIC_URL}/${String(src).replace(/^\/+/, "")}`;
   };
@@ -58,7 +72,6 @@ export default function DoctorCard({ doctor = {} }) {
   return (
     <div className="dc-card">
       <div className="dc-top">
-        {/* Avatar */}
         {normalizeSrc(avatarUrl) ? (
           <img
             className="dc-avatar-img"
@@ -77,14 +90,12 @@ export default function DoctorCard({ doctor = {} }) {
         </div>
       </div>
 
-      {/* Rating */}
       <div className="dc-rating">
         <Stars stars={stars} />
         <span className="dc-rating-num">{rating.toFixed(1)}</span>
         <span className="dc-reviews">({reviewsCount} reviews)</span>
       </div>
 
-      {/* Actions */}
       <div className="dc-actions">
         <button className="dc-btn dc-btn-primary" onClick={() => setOpen(true)}>
           Book Appointment
@@ -97,7 +108,6 @@ export default function DoctorCard({ doctor = {} }) {
         </button>
       </div>
 
-      {/* Existing appointments (cancel) */}
       {appointments.length > 0 && (
         <div className="dc-appts">
           <ul>
@@ -117,7 +127,6 @@ export default function DoctorCard({ doctor = {} }) {
         </div>
       )}
 
-      {/* Booking modal */}
       {open && (
         <AppointmentForm
           isOpen={open}
@@ -130,10 +139,8 @@ export default function DoctorCard({ doctor = {} }) {
   );
 }
 
-/* ---------- stars helpers ---------- */
-
+/* helpers for stars */
 function calcStars(value) {
-  // returns array of ["full"|"half"|"empty"] length 5
   const out = [];
   const v = Math.max(0, Math.min(5, value));
   const full = Math.floor(v);
@@ -146,7 +153,6 @@ function calcStars(value) {
   while (out.length < 5) out.push("empty");
   return out;
 }
-
 function Stars({ stars }) {
   return (
     <span className="dc-stars" aria-label={`Rating ${stars.filter(s=>s!=="empty").length} out of 5`}>

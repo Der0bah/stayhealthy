@@ -1,80 +1,99 @@
-// src/App.js
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useState } from "react";
+import { Routes, Route } from "react-router-dom";
 
-import AuthProvider from './context/AuthContext';
-import Navbar from './components/Navbar/Navbar';
-import PrivateRoute from './components/RouteGuards/PrivateRoute';
+import AuthProvider from "./context/AuthContext";
+import Navbar from "./components/Navbar/Navbar";
+import PrivateRoute from "./components/RouteGuards/PrivateRoute";
 
 // Pages
-import Landing from './pages/Landing/Landing';
-import Login from './pages/Login/Login';
-import SignUp from './pages/SignUp/SignUp';
-import Appointment from './pages/Appointment/Appointment';
-import Profile from './pages/Profile/Profile';
+import Landing from "./pages/Landing/Landing";
+import Login from "./pages/Login/Login";
+import SignUp from "./pages/SignUp/SignUp";
+import Appointment from "./pages/Appointment/Appointment";
+import Profile from "./pages/Profile/Profile";
 
 // Features
-import InstantConsultation from './components/InstantConsultation/InstantConsultation';
-import FindDoctorSearch from './components/FindDoctorSearch/FindDoctorSearch';
-import DoctorCardsGrid from './components/DoctorCard/DoctorCard';
+import InstantConsultation from "./components/InstantConsultation/InstantConsultation";
+import FindDoctorSearch from "./components/FindDoctorSearch/FindDoctorSearch";
+import DoctorCardsGrid from "./components/DoctorCard/DoctorCard";
+import AppointmentForm from "./components/AppointmentForm/AppointmentForm";
 
-// NEW: the integrated booking screen (optional)
-import BookingConsultation from './components/BookingConsultation';
-
-// (Optional) If you want a direct form route using the NEW AppointmentForm component
-// import AppointmentForm from './components/AppointmentForm/AppointmentForm';
+// 🔔 Notification (global)
+import Notification from "./components/Notification/Notification";
+import NotificationProvider from "./context/NotificationContext";
 
 export default function App() {
+  // Global notification state
+  const [notifyShow, setNotifyShow] = useState(false);
+  const [notifyCanceled, setNotifyCanceled] = useState(false);
+  const [lastBooked, setLastBooked] = useState(null);
+
+  const showNotification = (appointment) => {
+    setLastBooked(appointment || {});
+    setNotifyCanceled(false);
+    setNotifyShow(true);
+  };
+  const hideNotification = () => {
+    setNotifyCanceled(true);
+    setNotifyShow(false);
+  };
+
   return (
     <AuthProvider>
-      <Navbar />
-      <main className="container py-6">
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
+      {/* Provide global show/hide to all children */}
+      <NotificationProvider value={{ show: showNotification, hide: hideNotification }}>
+        <Navbar />
 
-          {/* Protected pages */}
-          <Route
-            path="/appointments"
-            element={
-              <PrivateRoute>
-                <Appointment />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <PrivateRoute>
-                <Profile />
-              </PrivateRoute>
-            }
-          />
+        {/* Global Notification: visible on every page */}
+        <Notification
+          appointment={lastBooked || {}}
+          show={notifyShow}
+          canceled={notifyCanceled}
+          onDismiss={() => setNotifyShow(false)}
+          autoHideMs={6000}
+        />
 
-          {/* OPTIONAL: expose new booking page */}
-          <Route path="/book" element={<BookingConsultation />} />
+        <main className="container py-6">
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
 
-          {/* If you want a direct route to the new AppointmentForm component, uncomment:
-          <Route
-            path="/appointments/new"
-            element={
-              <PrivateRoute>
-                <AppointmentForm />
-              </PrivateRoute>
-            }
-          />
-          */}
+            {/* Protected pages */}
+            <Route
+              path="/appointments"
+              element={
+                <PrivateRoute>
+                  <Appointment />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <Profile />
+                </PrivateRoute>
+              }
+            />
 
-          {/* Existing public feature routes */}
-          <Route path="/instant-consultation" element={<InstantConsultation />} />
-          <Route path="/find-doctor" element={<FindDoctorSearch />} />
-          <Route path="/doctors" element={<DoctorCardsGrid />} />
+            {/* Booking flow */}
+            <Route
+              path="/appointments/new"
+              element={
+                <PrivateRoute>
+                  <AppointmentForm />
+                </PrivateRoute>
+              }
+            />
 
-          {/* You can add a 404 here if desired */}
-          {/* <Route path="*" element={<NotFound />} /> */}
-        </Routes>
-      </main>
+            {/* Public feature routes */}
+            <Route path="/instant-consultation" element={<InstantConsultation />} />
+            <Route path="/find-doctor" element={<FindDoctorSearch />} />
+            <Route path="/doctors" element={<DoctorCardsGrid />} />
+          </Routes>
+        </main>
+      </NotificationProvider>
     </AuthProvider>
   );
 }
