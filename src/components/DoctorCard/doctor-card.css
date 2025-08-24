@@ -1,0 +1,44 @@
+.doctor-card {
+  font-family: Poppins, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+}
+
+.doctor-card-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.doctor-card-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 9999px;
+  object-fit: cover;
+  background: #f1f5f9;
+}
+
+.doctor-card-options-container {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.doctor-card-appointments {
+  margin-top: 10px;
+}
+
+.doctor-card-appointments-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: grid;
+  gap: 6px;
+}
+
+.doctor-card-appointment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background: #F9FAFB;
+  border-radius: 8px;
+}

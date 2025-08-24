@@ -1,14 +1,6 @@
 import React, { useMemo, useState } from "react";
 import "./AppointmentForm.css";
 
-/**
- * AppointmentForm (modal)
- * Props:
- *  - isOpen: boolean
- *  - doctor: { id, name, specialty, experienceYears, rating, avatarUrl }
- *  - onClose: () => void
- *  - onSubmit: (payload) => void
- */
 export default function AppointmentForm({ isOpen, doctor, onClose, onSubmit }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -31,7 +23,7 @@ export default function AppointmentForm({ isOpen, doctor, onClose, onSubmit }) {
   );
 
   const normalizeSrc = (src) => {
-    const fallback = `${process.env.PUBLIC_URL}/images/doctors/jiao.png`;
+    const fallback = `${process.env.PUBLIC_URL}/images/doctors/jiaoyang.png`;
     if (!src) return fallback;
     if (/^https?:\/\//i.test(src)) return src;
     return `${process.env.PUBLIC_URL}/${String(src).replace(/^\/+/, "")}`;
@@ -56,13 +48,15 @@ export default function AppointmentForm({ isOpen, doctor, onClose, onSubmit }) {
     };
     onSubmit?.(payload);
     onClose?.();
-    setName(""); setPhone(""); setAppointmentDate(""); setTimeSlot("");
+    setName("");
+    setPhone("");
+    setAppointmentDate("");
+    setTimeSlot("");
   };
 
   return (
     <div className="booking-modal-overlay" role="dialog" aria-modal="true">
       <div className="booking-modal-card">
-        {/* Header with unified avatar */}
         <div className="booking-modal-header">
           <img
             className="booking-doctor-avatar"
@@ -70,20 +64,23 @@ export default function AppointmentForm({ isOpen, doctor, onClose, onSubmit }) {
             alt={doctor?.name || "Doctor"}
             onError={(e) => {
               e.currentTarget.onerror = null;
-              e.currentTarget.src = `${process.env.PUBLIC_URL}/images/doctors/jiao.png`;
+              e.currentTarget.src = `${process.env.PUBLIC_URL}/images/doctors/jiaoyang.png`;
             }}
           />
           <div className="booking-doc-meta">
             <h2 className="booking-doc-name">{doctor?.name}</h2>
-            {doctor?.specialty && <div className="booking-doc-spec">{doctor.specialty}</div>}
+            {doctor?.specialty && (
+              <div className="booking-doc-spec">{doctor.specialty}</div>
+            )}
             {doctor?.experienceYears != null && (
-              <div className="booking-doc-exp">{doctor.experienceYears} years experience</div>
+              <div className="booking-doc-exp">
+                {doctor.experienceYears} years experience
+              </div>
             )}
             <div className="booking-doc-rating">Ratings: ⭐⭐⭐⭐</div>
           </div>
         </div>
 
-        {/* Form */}
         <form className="booking-form" onSubmit={submit}>
           <div className="form-row">
             <label className="form-label">Name:</label>
@@ -130,14 +127,20 @@ export default function AppointmentForm({ isOpen, doctor, onClose, onSubmit }) {
             >
               <option value="">Select a time slot</option>
               {slots.map((s) => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s}>
+                  {s}
+                </option>
               ))}
             </select>
           </div>
 
           <div className="booking-form-actions">
-            <button type="button" className="btn btn-ghost" onClick={onClose}>Close</button>
-            <button type="submit" className="btn btn-primary">Book Now</button>
+            <button type="button" className="btn btn-ghost" onClick={onClose}>
+              Close
+            </button>
+            <button type="submit" className="btn btn-primary">
+              Book Now
+            </button>
           </div>
         </form>
       </div>

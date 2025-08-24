@@ -1,24 +1,34 @@
-/* Fullscreen overlay */
+:root {
+  --color-primary: #007BFF;
+  --color-accent: #9B59B6;
+  --color-danger: #FF3B30;
+  --color-bg: #F9FAFB;
+  --color-text: #111111;
+  --color-muted: #6B7280;
+  --radius: 12px;
+  --shadow: 0 18px 48px rgba(0, 0, 0, .18);
+  --font: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial;
+}
+
 .booking-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, .45);
   display: grid;
   place-items: center;
   z-index: 60;
 }
 
-/* Centered card (looks like your reference) */
 .booking-modal-card {
   width: 520px;
   max-width: 92vw;
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
   padding: 20px;
+  font-family: var(--font);
 }
 
-/* Header */
 .booking-modal-header {
   display: grid;
   grid-template-columns: 64px 1fr;
@@ -39,16 +49,16 @@
   margin: 0;
   font-size: 20px;
   font-weight: 700;
+  color: var(--color-text);
 }
 
 .booking-doc-spec,
 .booking-doc-exp,
 .booking-doc-rating {
-  color: #6b7280;
+  color: var(--color-muted);
   font-size: 14px;
 }
 
-/* Form */
 .booking-form input[type="date"],
 .booking-form select {
   display: block !important;
@@ -63,7 +73,8 @@
 
 .form-label {
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: .95rem;
+  color: var(--color-text);
 }
 
 .form-input {
@@ -71,6 +82,7 @@
   padding: 10px 12px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
+  background: #fff;
 }
 
 .booking-form-actions {
@@ -85,8 +97,18 @@
   padding: 10px 14px;
   border-radius: 8px;
   cursor: pointer;
+  font-weight: 600;
+  font-family: var(--font);
 }
 
-.btn-primary { background: #2563eb; color: #fff; }
-.btn-primary:hover { background: #1d4ed8; }
-.btn-ghost { background: transparent; color: #2563eb; }
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+.btn-primary:hover {
+  filter: brightness(.95);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--color-primary);
+}
