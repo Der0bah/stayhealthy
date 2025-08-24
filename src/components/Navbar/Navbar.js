@@ -2,39 +2,37 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 
-
 export default function Navbar() {
+  // Mobile menu
   const [open, setOpen] = useState(false);
-  const [userName, setUserName] = useState("");
 
-  useEffect(() => {
-    // fetch from sessionStorage (or auth context)
-    const name = sessionStorage.getItem("name");
-    if (name) {
-      setUserName(name);
-    }
-  }, []);
+  // User dropdown
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  return (
-    <header className="sh-navbar">
-      <div className="sh-nav-inner">
-        <Link to="/" className="sh-brand">
-          <span className="sh-brand-dot">●</span> <span>StayHealthy</span>
-        </Link>
-
-export default function Navbar() {
-  const [open, setOpen] = useState(false);        // mobile burger menu
-  const [menuOpen, setMenuOpen] = useState(false); // user dropdown
+  // Display name shown in "Welcome, ____"
   const [displayName, setDisplayName] = useState("User");
+
   const navRef = useRef(null);
   const navigate = useNavigate();
 
   // Read user name once from sessionStorage (fallback to email prefix)
   useEffect(() => {
-    const n = sessionStorage.getItem("name");
-    const email = sessionStorage.getItem("email");
-    if (n && n.trim()) setDisplayName(n.split(" ")[0]);
-    else if (email) setDisplayName(String(email).split("@")[0]);
+    const setNameFromStorage = () => {
+      const n = sessionStorage.getItem("name");
+      const email = sessionStorage.getItem("email");
+      if (n && n.trim()) setDisplayName(n.split(" ")[0]);
+      else if (email) setDisplayName(String(email).split("@")[0]);
+      else setDisplayName("User");
+    };
+
+    setNameFromStorage();
+
+    // Also react to changes made by other parts of the app (e.g., Profile save)
+    const onStorage = (e) => {
+      if (e.key === "name" || e.key === "email") setNameFromStorage();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   // Close dropdown on outside click / ESC
@@ -60,18 +58,24 @@ export default function Navbar() {
   }, [menuOpen]);
 
   const handleLogout = () => {
-    // clear anything you store
     sessionStorage.removeItem("auth-token");
     sessionStorage.removeItem("name");
     sessionStorage.removeItem("phone");
-    // optionally clear others…
+    sessionStorage.removeItem("email");
     navigate("/login");
   };
 
   return (
     <header className="sh-navbar" ref={navRef}>
       <div className="sh-nav-inner">
-        <Link to="/" className="sh-brand" onClick={() => { setOpen(false); setMenuOpen(false); }}>
+        <Link
+          to="/"
+          className="sh-brand"
+          onClick={() => {
+            setOpen(false);
+            setMenuOpen(false);
+          }}
+        >
           <span className="sh-brand-dot">●</span> <span>StayHealthy</span>
         </Link>
 
