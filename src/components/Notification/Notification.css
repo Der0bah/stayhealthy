@@ -1,68 +1,79 @@
-/* Fixed container (top-right) */
-.notify-root {
+notify-root {
   position: fixed;
   top: 18px;
   right: 18px;
   z-index: 70;
-  pointer-events: none; /* allow clicks to pass except on card */
+  pointer-events: none; /* container ignores events */
 }
 
-/* Card */
 .notify-card {
   pointer-events: auto;
   width: min(360px, 92vw);
-  background: #1d4ed8; /* blue */
+  background: #1d4ed8; /* primary blue */
   color: #ffffff;
   border-radius: 14px;
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.25);
-  padding: 16px 16px 14px 16px;
-  overflow: hidden;
+  padding: 16px;
   position: relative;
-  animation: notify-slide-in .18s ease-out;
+  animation: notify-pop 0.18s ease-out;
 }
 
-/* Title */
+/* Entrance animation */
+@keyframes notify-pop {
+  from {
+    transform: translateY(-8px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
 .notify-title {
   margin: 0 28px 8px 0;
   font-weight: 800;
   font-size: 18px;
-  letter-spacing: .2px;
 }
 
-/* Close (X) */
 .notify-close {
   position: absolute;
-  top: 8px; right: 8px;
-  width: 30px; height: 30px;
-  border: 0; border-radius: 8px;
-  background: rgba(255,255,255,.18);
-  color: #fff; font-size: 20px; line-height: 1;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 20px;
   cursor: pointer;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.notify-close:hover { background: rgba(255,255,255,.28); }
 
-/* Details list */
+.notify-close:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
 .notify-list {
   margin: 0;
 }
+
 .notify-list > div {
   display: grid;
   grid-template-columns: 132px 1fr;
-  align-items: baseline;
   gap: 6px;
   padding: 4px 0;
 }
+
 .notify-list dt {
   font-weight: 700;
-  opacity: .95;
 }
+
 .notify-list dd {
   margin: 0;
   font-weight: 600;
-}
-
-/* Slide-in animation */
-@keyframes notify-slide-in {
-  from { transform: translateY(-8px); opacity: 0; }
-  to   { transform: translateY(0); opacity: 1; }
 }
