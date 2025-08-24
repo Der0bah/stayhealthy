@@ -1,17 +1,23 @@
 import React, { useMemo, useState } from "react";
 import "./AppointmentForm.css";
 
+/**
+ * AppointmentForm (modal)
+ * Props:
+ *  - isOpen: boolean
+ *  - doctor: { id, name, specialty, experienceYears, rating, avatarUrl }
+ *  - onClose: () => void
+ *  - onSubmit: (payload) => void
+ */
 export default function AppointmentForm({ isOpen, doctor, onClose, onSubmit }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [appointmentDate, setAppointmentDate] = useState("");
-  const [appointmentTime, setAppointmentTime] = useState("");
   const [timeSlot, setTimeSlot] = useState("");
-  const [futureDate, setFutureDate] = useState(""); // “book for coming dates”
+
+  if (!isOpen) return null;
 
   const today = new Date().toISOString().slice(0, 10);
-
-  // Example slots; adjust as needed or replace with API data
   const slots = useMemo(
     () => [
       "09:00 – 09:30",
@@ -24,150 +30,117 @@ export default function AppointmentForm({ isOpen, doctor, onClose, onSubmit }) {
     []
   );
 
-  if (!isOpen) return null;
-
-  const validate = () => {
-    // Basic validation — expand as needed
-    if (!name.trim()) return "Please enter patient name.";
-    if (!phone.trim()) return "Please enter phone number.";
-    if (!appointmentDate && !futureDate)
-      return "Select Appointment Date or Future Date.";
-    if (appointmentDate && appointmentDate < today)
-      return "Appointment date cannot be in the past.";
-    if (futureDate && futureDate < today)
-      return "Future date cannot be in the past.";
-    if (!appointmentTime && !timeSlot)
-      return "Select Appointment Time or a Time Slot.";
-    return null;
+  const normalizeSrc = (src) => {
+    const fallback = `${process.env.PUBLIC_URL}/images/doctors/jiao.png`;
+    if (!src) return fallback;
+    if (/^https?:\/\//i.test(src)) return src;
+    return `${process.env.PUBLIC_URL}/${String(src).replace(/^\/+/, "")}`;
   };
 
-  const handleSubmit = (e) => {
+  const submit = (e) => {
     e.preventDefault();
-    const err = validate();
-    if (err) {
-      alert(err);
-      return;
-    }
+    if (!name.trim()) return alert("Please enter patient name.");
+    if (!phone.trim()) return alert("Please enter phone number.");
+    if (!appointmentDate) return alert("Please select appointment date.");
+    if (!timeSlot) return alert("Please select a time slot.");
+
     const payload = {
       id: crypto.randomUUID(),
       doctorId: doctor?.id,
       doctorName: doctor?.name,
       name: name.trim(),
       phone: phone.trim(),
-      // Use futureDate if provided; otherwise appointmentDate
-      date: (futureDate || appointmentDate),
-      time: appointmentTime || null,
-      timeSlot: timeSlot || null,
+      date: appointmentDate,
+      timeSlot,
       createdAt: Date.now(),
     };
     onSubmit?.(payload);
     onClose?.();
-    // reset
-    setName("");
-    setPhone("");
-    setAppointmentDate("");
-    setAppointmentTime("");
-    setTimeSlot("");
-    setFutureDate("");
+    setName(""); setPhone(""); setAppointmentDate(""); setTimeSlot("");
   };
 
   return (
-    <div className="booking-form bg-white rounded-xl shadow p-5">
-      <h3 className="text-lg font-semibold mb-2">
-        {doctor?.name} {doctor?.specialty ? `• ${doctor.specialty}` : ""}
-      </h3>
-
-      <form onSubmit={handleSubmit} className="space-y-3">
-        {/* Patient Name */}
-        <div className="form-row">
-          <label className="form-label">Name:</label>
-          <input
-            className="form-input"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Patient name"
-            required
+    <div className="booking-modal-overlay" role="dialog" aria-modal="true">
+      <div className="booking-modal-card">
+        {/* Header with unified avatar */}
+        <div className="booking-modal-header">
+          <img
+            className="booking-doctor-avatar"
+            src={normalizeSrc(doctor?.avatarUrl)}
+            alt={doctor?.name || "Doctor"}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = `${process.env.PUBLIC_URL}/images/doctors/jiao.png`;
+            }}
           />
+          <div className="booking-doc-meta">
+            <h2 className="booking-doc-name">{doctor?.name}</h2>
+            {doctor?.specialty && <div className="booking-doc-spec">{doctor.specialty}</div>}
+            {doctor?.experienceYears != null && (
+              <div className="booking-doc-exp">{doctor.experienceYears} years experience</div>
+            )}
+            <div className="booking-doc-rating">Ratings: ⭐⭐⭐⭐</div>
+          </div>
         </div>
 
-        {/* Phone */}
-        <div className="form-row">
-          <label className="form-label">Phone Number:</label>
-          <input
-            className="form-input"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            inputMode="tel"
-            placeholder="(xx) xxxxx-xxxx"
-            required
-          />
-        </div>
+        {/* Form */}
+        <form className="booking-form" onSubmit={submit}>
+          <div className="form-row">
+            <label className="form-label">Name:</label>
+            <input
+              className="form-input"
+              placeholder="Patient name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
 
-        {/* Appointment Date */}
-        <div className="form-row">
-          <label className="form-label">Date of Appointment:</label>
-          <input
-            type="date"
-            className="form-input"
-            value={appointmentDate}
-            onChange={(e) => setAppointmentDate(e.target.value)}
-            min={today}
-          />
-        </div>
+          <div className="form-row">
+            <label className="form-label">Phone Number:</label>
+            <input
+              className="form-input"
+              placeholder="(xx) xxxxx-xxxx"
+              inputMode="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+            />
+          </div>
 
-        {/* Appointment Time (free time) */}
-        <div className="form-row">
-          <label className="form-label">Appointment Time (HH:MM):</label>
-          <input
-            type="time"
-            className="form-input"
-            value={appointmentTime}
-            onChange={(e) => setAppointmentTime(e.target.value)}
-          />
-        </div>
+          <div className="form-row">
+            <label className="form-label">Date of Appointment:</label>
+            <input
+              type="date"
+              className="form-input"
+              value={appointmentDate}
+              onChange={(e) => setAppointmentDate(e.target.value)}
+              min={today}
+              required
+            />
+          </div>
 
-        {/* ➕ Book Time Slot (extra element requested) */}
-        <div className="form-row">
-          <label className="form-label">Book Time Slot:</label>
-          <select
-            className="form-input"
-            value={timeSlot}
-            onChange={(e) => setTimeSlot(e.target.value)}
-          >
-            <option value="">Select a time slot</option>
-            {slots.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div className="form-row">
+            <label className="form-label">Book Time Slot:</label>
+            <select
+              className="form-input"
+              value={timeSlot}
+              onChange={(e) => setTimeSlot(e.target.value)}
+              required
+            >
+              <option value="">Select a time slot</option>
+              {slots.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
 
-        {/* ➕ Book for specified future date (extra element requested) */}
-        <div className="form-row">
-          <label className="form-label">Book for a future date:</label>
-          <input
-            type="date"
-            className="form-input"
-            value={futureDate}
-            onChange={(e) => setFutureDate(e.target.value)}
-            min={today}
-          />
-          <small className="text-muted">
-            Optional — use this to schedule for upcoming dates. If you fill this,
-            it overrides “Date of Appointment”.
-          </small>
-        </div>
-
-        <div className="flex gap-2 justify-end pt-2">
-          <button type="button" className="btn btn-ghost" onClick={onClose}>
-            Cancel
-          </button>
-          <button type="submit" className="btn btn-primary">
-            Book Now
-          </button>
-        </div>
-      </form>
+          <div className="booking-form-actions">
+            <button type="button" className="btn btn-ghost" onClick={onClose}>Close</button>
+            <button type="submit" className="btn btn-primary">Book Now</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

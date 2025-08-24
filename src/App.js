@@ -17,15 +17,16 @@ import Profile from './pages/Profile/Profile';
 import InstantConsultation from './components/InstantConsultation/InstantConsultation';
 import FindDoctorSearch from './components/FindDoctorSearch/FindDoctorSearch';
 import DoctorCardsGrid from './components/DoctorCard/DoctorCard';
-import AppointmentForm from './components/AppointmentForm/AppointmentForm';
 
-// NEW: Booking flow that integrates FindDoctorSearch + DoctorCard
+// NEW: the integrated booking screen (optional)
 import BookingConsultation from './components/BookingConsultation';
+
+// (Optional) If you want a direct form route using the NEW AppointmentForm component
+// import AppointmentForm from './components/AppointmentForm/AppointmentForm';
 
 export default function App() {
   return (
     <AuthProvider>
-      {/* Router should be in index.js; keep only Routes here */}
       <Navbar />
       <main className="container py-6">
         <Routes>
@@ -51,13 +52,10 @@ export default function App() {
             }
           />
 
-          {/* Booking flow: standalone page using DoctorCard + FindDoctorSearch */}
-          {/* Make it protected if you only want logged-in users to book:
-              <Route path="/book" element={<PrivateRoute><BookingConsultation /></PrivateRoute>} />
-          */}
+          {/* OPTIONAL: expose new booking page */}
           <Route path="/book" element={<BookingConsultation />} />
 
-          {/* Legacy direct booking form (if still used elsewhere) */}
+          {/* If you want a direct route to the new AppointmentForm component, uncomment:
           <Route
             path="/appointments/new"
             element={
@@ -66,13 +64,14 @@ export default function App() {
               </PrivateRoute>
             }
           />
+          */}
 
-          {/* Public feature routes */}
+          {/* Existing public feature routes */}
           <Route path="/instant-consultation" element={<InstantConsultation />} />
           <Route path="/find-doctor" element={<FindDoctorSearch />} />
           <Route path="/doctors" element={<DoctorCardsGrid />} />
 
-          {/* Fallback: add a 404 if you have one */}
+          {/* You can add a 404 here if desired */}
           {/* <Route path="*" element={<NotFound />} /> */}
         </Routes>
       </main>

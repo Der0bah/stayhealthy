@@ -1,11 +1,9 @@
-// src/components/DoctorCard/DoctorCard.js
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import AppointmentForm from "../AppointmentForm/AppointmentForm";
 
 export default function DoctorCard({ doctor }) {
   const [open, setOpen] = useState(false);
   const [appointments, setAppointments] = useState([]);
-
   const storageKey = `appointments_${doctor?.id ?? "unknown"}`;
 
   useEffect(() => {
@@ -19,20 +17,28 @@ export default function DoctorCard({ doctor }) {
     setAppointments(next);
     try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
   };
+  const handleBooked = (payload) => persist([payload, ...appointments]);
+  const handleCancel = (id) => persist(appointments.filter((a) => a.id !== id));
 
-  const handleBooked = (payload) => {
-    persist([payload, ...appointments]);
-  };
-
-  const handleCancel = (id) => {
-    persist(appointments.filter((a) => a.id !== id));
+  const normalizeSrc = (src) => {
+    const fallback = `${process.env.PUBLIC_URL}/images/doctors/jiao.png`;
+    if (!src) return fallback;
+    if (/^https?:\/\//i.test(src)) return src;
+    return `${process.env.PUBLIC_URL}/${String(src).replace(/^\/+/, "")}`;
   };
 
   return (
     <div className="doctor-card">
-      {/* Card header (avatar, name, specialty, rating, etc.) */}
       <div className="doctor-card-header">
-        <div className="doctor-card-avatar" aria-hidden />
+        <img
+          src={normalizeSrc(doctor?.avatarUrl)}
+          alt={doctor?.name || "Doctor"}
+          className="doctor-card-avatar"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = `${process.env.PUBLIC_URL}/images/doctors/jiao.png`;
+          }}
+        />
         <div>
           <h3 className="doctor-card-name">{doctor?.name}</h3>
           <div className="doctor-card-sub">
@@ -42,14 +48,12 @@ export default function DoctorCard({ doctor }) {
         </div>
       </div>
 
-      {/* Same container class used by IC variant */}
       <div className="doctor-card-options-container">
         <button className="btn btn-primary" onClick={() => setOpen(true)}>
           Book Appointment
         </button>
       </div>
 
-      {/* Existing appointments list with cancel */}
       {appointments.length > 0 && (
         <div className="doctor-card-appointments">
           <h4>Your Appointments</h4>
@@ -58,7 +62,6 @@ export default function DoctorCard({ doctor }) {
               <li key={a.id} className="doctor-card-appointment-item">
                 <span>
                   <strong>{a.date}</strong>
-                  {a.time ? ` • ${a.time}` : ""}
                   {a.timeSlot ? ` • ${a.timeSlot}` : ""}
                   {a.name ? ` • ${a.name}` : ""}
                 </span>
@@ -71,16 +74,13 @@ export default function DoctorCard({ doctor }) {
         </div>
       )}
 
-      {/* Booking Form (modal or inline) */}
       {open && (
-        <div className="doctor-card-booking-modal">
-          <AppointmentForm
-            isOpen={open}
-            doctor={doctor}
-            onClose={() => setOpen(false)}
-            onSubmit={handleBooked}
-          />
-        </div>
+        <AppointmentForm
+          isOpen={open}
+          doctor={doctor}
+          onClose={() => setOpen(false)}
+          onSubmit={handleBooked}
+        />
       )}
     </div>
   );

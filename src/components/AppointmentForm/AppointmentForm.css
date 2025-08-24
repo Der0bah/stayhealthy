@@ -1,7 +1,92 @@
+/* Fullscreen overlay */
+.booking-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: grid;
+  place-items: center;
+  z-index: 60;
+}
+
+/* Centered card (looks like your reference) */
+.booking-modal-card {
+  width: 520px;
+  max-width: 92vw;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
+  padding: 20px;
+}
+
+/* Header */
+.booking-modal-header {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.booking-doctor-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 9999px;
+  object-fit: cover;
+  background: #f1f5f9;
+}
+
+.booking-doc-name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.booking-doc-spec,
+.booking-doc-exp,
+.booking-doc-rating {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Form */
 .booking-form input[type="date"],
-.booking-form input[type="time"],
 .booking-form select {
   display: block !important;
   visibility: visible !important;
 }
-.booking-form .form-row { display: grid; gap: 6px; margin-bottom: 10px; }
+
+.booking-form .form-row {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.form-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.booking-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.btn {
+  border: 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-primary { background: #2563eb; color: #fff; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-ghost { background: transparent; color: #2563eb; }

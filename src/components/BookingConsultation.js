@@ -1,4 +1,3 @@
-// src/components/BookingConsultation.js
 import { useMemo, useState } from "react";
 import DoctorCard from "./DoctorCard/DoctorCard";
 import FindDoctorSearch from "./FindDoctorSearch/FindDoctorSearch";
@@ -21,7 +20,9 @@ export default function BookingConsultation() {
     const q = query.trim().toLowerCase();
     return allDoctors.filter((d) => {
       const matchesQuery =
-        !q || d.name.toLowerCase().includes(q) || d.specialty.toLowerCase().includes(q);
+        !q ||
+        d.name.toLowerCase().includes(q) ||
+        d.specialty.toLowerCase().includes(q);
       const matchesSpec =
         specialtyFilter === "all" ||
         d.specialty.toLowerCase() === specialtyFilter.toLowerCase();
