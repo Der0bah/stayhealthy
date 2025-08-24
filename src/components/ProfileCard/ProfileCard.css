@@ -1,0 +1,22 @@
+:root{ --pc-bg:#fff; --pc-surface:#f8fafc; --pc-border:#e5e7eb; --pc-text:#0f172a; --pc-muted:#64748b; --pc-primary:#1d4ed8; --pc-primary-600:#1e40af; --pc-ring: rgba(29,78,216,.15); --pc-shadow:0 14px 38px rgba(2,8,23,.08); --pc-radius: 16px; }
+.pc-card{ width:100%; max-width:640px; margin:0 auto; background:var(--pc-bg); border:1px solid var(--pc-border); border-radius:var(--pc-radius); box-shadow:var(--pc-shadow); padding:18px; }
+.pc-title{ margin:0 0 14px; font-size:22px; font-weight:800; color:var(--pc-text); }
+.pc-loading{ color:var(--pc-muted); padding:10px 2px; }
+.pc-form{ display:grid; gap:12px; }
+.pc-label{ font-weight:700; color:var(--pc-text); }
+.pc-input{ width:100%; border:1px solid var(--pc-border); border-radius:12px; padding:12px 14px; background:#fff; color:var(--pc-text); transition:border-color .12s ease, box-shadow .12s ease, background .12s ease; }
+.pc-input:focus{ outline:none; border-color:var(--pc-primary); box-shadow:0 0 0 4px var(--pc-ring); }
+.pc-details p{ margin:10px 0; color:var(--pc-text); }
+.pc-actions{ margin-top:8px; display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; }
+.pc-btn{ border:1px solid #d1d5db; background:#fff; color:#333; padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:700; transition:transform .05s ease, filter .12s ease, background .12s ease; }
+.pc-btn:hover{ filter:brightness(.98); }
+.pc-btn:active{ transform:translateY(1px); }
+.pc-btn:focus-visible{ outline:3px solid var(--pc-ring); outline-offset:2px; }
+.pc-btn-primary{ background:var(--pc-primary); border-color:var(--pc-primary); color:#fff; box-shadow:0 8px 20px rgba(29,78,216,.22); }
+.pc-btn-primary:hover{ background:var(--pc-primary-600); }
+.pc-header{ display:flex; align-items:center; gap:14px; margin-bottom:18px; }
+.pc-avatar{ width:58px; height:58px; border-radius:50%; background:var(--pc-primary); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:22px; box-shadow:0 6px 14px rgba(29,78,216,.25); }
+.pc-header-text{ flex:1; display:flex; flex-direction:column; }
+.pc-header-name{ margin:0; font-size:20px; font-weight:800; color:var(--pc-text); }
+.pc-header-sub{ margin:2px 0 0; font-size:14px; color:var(--pc-muted); }
+@media (max-width: 720px){ .pc-card{ padding:14px; border-radius:14px; } .pc-title{ font-size:20px; } }
