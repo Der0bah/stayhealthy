@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./DoctorCard.css";
@@ -23,7 +24,8 @@ export function DoctorCard({
   ));
 
   const handleBook = () => {
-    navigate("/appointments", { state: { doctor: name, specialty } });
+    // Send doctor info to the new appointment form
+    navigate("/appointments/new", { state: { doctor: name, specialty } });
   };
 
   return (
@@ -51,6 +53,7 @@ export function DoctorCard({
           {profile && <p className="dc-profile">{profile}</p>}
         </div>
       </div>
+
       <button type="button" className="dc-book-btn" onClick={handleBook}>
         Book Appointment
         <br />
@@ -101,6 +104,7 @@ export default function DoctorCardsGrid() {
           Book appointments with minimum wait-time &amp; verified doctor details
         </p>
       </div>
+
       <div className="dc-grid">
         {doctors.map((d) => (
           <DoctorCard key={d.name} {...d} />
