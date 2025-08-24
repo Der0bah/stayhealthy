@@ -2,6 +2,26 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 
+
+export default function Navbar() {
+  const [open, setOpen] = useState(false);
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    // fetch from sessionStorage (or auth context)
+    const name = sessionStorage.getItem("name");
+    if (name) {
+      setUserName(name);
+    }
+  }, []);
+
+  return (
+    <header className="sh-navbar">
+      <div className="sh-nav-inner">
+        <Link to="/" className="sh-brand">
+          <span className="sh-brand-dot">●</span> <span>StayHealthy</span>
+        </Link>
+
 export default function Navbar() {
   const [open, setOpen] = useState(false);        // mobile burger menu
   const [menuOpen, setMenuOpen] = useState(false); // user dropdown
