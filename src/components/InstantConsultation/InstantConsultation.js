@@ -1,87 +1,103 @@
-import React, { useEffect, useState } from 'react';
-import './InstantConsultation.css';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import FindDoctorSearchIC from './FindDoctorSearchIC/FindDoctorSearchIC';
-import DoctorCardIC from './DoctorCardIC/DoctorCardIC';
-import './InstantConsultation.css';
+import React, { useMemo, useState } from "react";
+import DoctorCardIC from "./DoctorCardIC/DoctorCardIC";
+import "./InstantConsultation.css";
 
+const SPECIALTY_EMOJI = {
+  "Dentist": "🦷",
+  "Gynecologist/obstetrician": "👶",
+  "General Physician": "🩺",
+  "Dermatologist": "🧴",
+  "Ear-nose-throat (ent) Specialist": "👂",
+  "Homeopath": "🌿",
+  "Ayurveda": "🪔",
+  "Cardiologist": "❤️",
+  "Orthopedist": "🦴",
+  "Neurologist": "🧠",
+};
 
-const InstantConsultation = () => {
-    const [searchParams] = useSearchParams();
-    const [doctors, setDoctors] = useState([]);
-    const [filteredDoctors, setFilteredDoctors] = useState([]);
-    const [isSearched, setIsSearched] = useState(false);
-    
-    const getDoctorsDetails = () => {
-        fetch('https://api.npoint.io/9a5543d36f1460da2f63')
-        .then(res => res.json())
-        .then(data => {
-            if (searchParams.get('speciality')) {
-                // window.reload()
-                const filtered = data.filter(doctor => doctor.speciality.toLowerCase() === searchParams.get('speciality').toLowerCase());
+export default function InstantConsultation() {
+  const [q, setQ] = useState("");
 
-                setFilteredDoctors(filtered);
-                
-                setIsSearched(true);
-                window.reload()
-            } else {
-                setFilteredDoctors([]);
-                setIsSearched(false);
-            }
-            setDoctors(data);
-        })
-        .catch(err => console.log(err));
-    }
-    const handleSearch = (searchText) => {
+  // Example doctor data; your app likely pulls this from props/context
+  const doctors = useMemo(
+    () => [
+      { id: "d1", name: "Dr. Jiao Yang", specialty: "Dentist", experienceYears: 9, rating: 4.8, reviewsCount: 127 },
+      { id: "d2", name: "Dr. Jane Smith", specialty: "Dermatologist", experienceYears: 7, rating: 4.6, reviewsCount: 127 },
+      { id: "d3", name: "Dr. John Doe", specialty: "Cardiologist", experienceYears: 12, rating: 4.9, reviewsCount: 127 },
+    ],
+    []
+  );
 
-        if (searchText === '') {
-            setFilteredDoctors([]);
-            setIsSearched(false);
-            } else {
-                
-            const filtered = doctors.filter(
-                (doctor) =>
-                // 
-                doctor.speciality.toLowerCase().includes(searchText.toLowerCase())
-                
-            );
-                
-            setFilteredDoctors(filtered);
-            setIsSearched(true);
-            window.location.reload()
-        }
-    };
-    const navigate = useNavigate();
-    useEffect(() => {
-        getDoctorsDetails();
-        // const authtoken = sessionStorage.getItem("auth-token");
-        // if (!authtoken) {
-        //     navigate("/login");
-        // }
-    }, [searchParams])
+  const filtered = useMemo(() => {
+    const text = q.trim().toLowerCase();
+    if (!text) return doctors;
+    return doctors.filter(
+      (d) =>
+        d.name.toLowerCase().includes(text) ||
+        (d.specialty || "").toLowerCase().includes(text)
+    );
+  }, [q, doctors]);
 
-    return (
-        <center>
-            <div  className="searchpage-container">
-            <FindDoctorSearchIC onSearch={handleSearch} />
-            <div className="search-results-container">
-            {isSearched ? (
-                <center>
-                    <h2>{filteredDoctors.length} doctors are available {searchParams.get('location')}</h2>
-                    <h3>Book appointments with minimum wait-time & verified doctor details</h3>
-                    {filteredDoctors.length > 0 ? (
-                    filteredDoctors.map(doctor => <DoctorCardIC className="doctorcard" {...doctor} key={doctor.name} />)
-                    ) : (
-                    <p>No doctors found.</p>
-                    )}
-                </center>
-                ) : (
-                ''
-                )}
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Optional: trigger analytics or remote search
+  };
+
+  return (
+    <section className="ic-wrap container">
+      <h2 className="ic-title">Find a doctor and Consult instantly</h2>
+
+      {/* Search: same behaviour as FindDoctor (form + magnifier) */}
+      <form className="ic-search" onSubmit={handleSubmit}>
+        <input
+          className="ic-search-input"
+          placeholder="Search doctors, clinics, hospitals, etc."
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          aria-label="Search"
+        />
+        <button type="submit" className="ic-search-button" aria-label="Search">
+          🔎
+        </button>
+      </form>
+
+      {/* Optional specialty quick list WITH EMOJIS */}
+      <div className="ic-specialties">
+        {[
+          "Dentist",
+          "Gynecologist/obstetrician",
+          "General Physician",
+          "Dermatologist",
+          "Ear-nose-throat (ent) Specialist",
+          "Homeopath",
+          "Ayurveda",
+        ].map((s) => (
+          <button
+            key={s}
+            className="ic-chip"
+            onClick={() => setQ(s)}
+            title={s}
+          >
+            <span className="ic-chip-emoji">{SPECIALTY_EMOJI[s] || "👤"}</span>
+            <span className="ic-chip-label">{s}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Results */}
+      <div className="ic-grid">
+        {filtered.map((doc) => (
+          <div key={doc.id} className="ic-row">
+            {/* Emoji before specialty (like FindDoctor list style) */}
+            <span className="ic-row-emoji">
+              {SPECIALTY_EMOJI[doc.specialty] || "👤"}
+            </span>
+            <div className="ic-row-card">
+              <DoctorCardIC doctor={doc} />
             </div>
-        </div>
-        </center>
-    )
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
-
-export default InstantConsultation

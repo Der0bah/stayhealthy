@@ -1,12 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import AppointmentForm from "../AppointmentForm/AppointmentForm";
 import "./doctor-card.css";
 
-export default function DoctorCard({ doctor }) {
+/**
+ * Expected doctor shape (safe defaults if missing):
+ * {
+ *   id, name, specialty, experienceYears, rating, reviewsCount, avatarUrl
+ * }
+ */
+export default function DoctorCard({ doctor = {} }) {
   const [open, setOpen] = useState(false);
   const [appointments, setAppointments] = useState([]);
-  const storageKey = `appointments_${doctor?.id ?? "unknown"}`;
 
+  const {
+    id = "unknown",
+    name = "Dr. Jane Doe",
+    specialty = "Dermatologist",
+    experienceYears = 7,
+    rating = 4.6,
+    reviewsCount = 127,
+    avatarUrl = "",
+  } = doctor;
+
+  // Local storage for booked appts
+  const storageKey = `appointments_${id}`;
   useEffect(() => {
     try {
       const raw = localStorage.getItem(storageKey);
@@ -18,53 +35,89 @@ export default function DoctorCard({ doctor }) {
     setAppointments(next);
     try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
   };
+
   const handleBooked = (payload) => persist([payload, ...appointments]);
-  const handleCancel = (id) => persist(appointments.filter((a) => a.id !== id));
+  const handleCancel = (apptId) => persist(appointments.filter(a => a.id !== apptId));
+
+  // Avatar: initials fallback
+  const initials = useMemo(() => {
+    const parts = (name || "").split(" ").filter(Boolean);
+    const first = parts[0]?.[0] || "D";
+    const last = parts[parts.length - 1]?.[0] || "R";
+    return (first + last).toUpperCase();
+  }, [name]);
 
   const normalizeSrc = (src) => {
-    const fallback = `${process.env.PUBLIC_URL}/images/doctors/jiaoyang.png`;
-    if (!src) return fallback;
+    if (!src) return null; // force initials mode
     if (/^https?:\/\//i.test(src)) return src;
     return `${process.env.PUBLIC_URL}/${String(src).replace(/^\/+/, "")}`;
   };
 
+  const stars = useMemo(() => calcStars(rating), [rating]);
+
   return (
-    <div className="doctor-card">
-      <div className="doctor-card-header">
-        <img
-          src={normalizeSrc(doctor?.avatarUrl)}
-          alt={doctor?.name || "Doctor"}
-          className="doctor-card-avatar"
-          onError={(e) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = `${process.env.PUBLIC_URL}/images/doctors/jiaoyang.png`;
-          }}
-        />
-        <div>
-          <h3 className="doctor-card-name">{doctor?.name}</h3>
-          <div className="doctor-card-sub">{doctor?.specialty} • {doctor?.experienceYears} years</div>
-          <div className="doctor-card-rating">Ratings: ⭐⭐⭐⭐</div>
+    <div className="dc-card">
+      <div className="dc-top">
+        {/* Avatar */}
+        {normalizeSrc(avatarUrl) ? (
+          <img
+            className="dc-avatar-img"
+            src={normalizeSrc(avatarUrl)}
+            alt={name}
+            onError={(e) => (e.currentTarget.style.display = "none")}
+          />
+        ) : (
+          <div className="dc-avatar">{initials}</div>
+        )}
+
+        <div className="dc-header">
+          <h3 className="dc-name">{name}</h3>
+          <div className="dc-specialty">{specialty}</div>
+          <div className="dc-exp">{experienceYears} years experience</div>
         </div>
       </div>
 
-      <div className="doctor-card-options-container">
-        <button className="btn btn-primary" onClick={() => setOpen(true)}>Book Appointment</button>
+      {/* Rating */}
+      <div className="dc-rating">
+        <Stars stars={stars} />
+        <span className="dc-rating-num">{rating.toFixed(1)}</span>
+        <span className="dc-reviews">({reviewsCount} reviews)</span>
       </div>
 
+      {/* Actions */}
+      <div className="dc-actions">
+        <button className="dc-btn dc-btn-primary" onClick={() => setOpen(true)}>
+          Book Appointment
+        </button>
+        <button
+          className="dc-btn dc-btn-outline"
+          onClick={() => alert("Profile coming soon")}
+        >
+          View Profile
+        </button>
+      </div>
+
+      {/* Existing appointments (cancel) */}
       {appointments.length > 0 && (
-        <div className="doctor-card-appointments">
-          <h4>Your Appointments</h4>
-          <ul className="doctor-card-appointments-list">
+        <div className="dc-appts">
+          <ul>
             {appointments.map((a) => (
-              <li key={a.id} className="doctor-card-appointment-item">
-                <span><strong>{a.date}</strong>{a.timeSlot ? ` • ${a.timeSlot}` : ""}{a.name ? ` • ${a.name}` : ""}</span>
-                <button className="btn btn-ghost btn-sm" onClick={() => handleCancel(a.id)}>Cancel</button>
+              <li key={a.id}>
+                <span>
+                  <strong>{a.date}</strong>
+                  {a.timeSlot ? ` • ${a.timeSlot}` : ""}
+                  {a.name ? ` • ${a.name}` : ""}
+                </span>
+                <button className="dc-cancel" onClick={() => handleCancel(a.id)}>
+                  Cancel
+                </button>
               </li>
             ))}
           </ul>
         </div>
       )}
 
+      {/* Booking modal */}
       {open && (
         <AppointmentForm
           isOpen={open}
@@ -74,5 +127,32 @@ export default function DoctorCard({ doctor }) {
         />
       )}
     </div>
+  );
+}
+
+/* ---------- stars helpers ---------- */
+
+function calcStars(value) {
+  // returns array of ["full"|"half"|"empty"] length 5
+  const out = [];
+  const v = Math.max(0, Math.min(5, value));
+  const full = Math.floor(v);
+  const decimal = v - full;
+  for (let i = 0; i < full; i++) out.push("full");
+  if (out.length < 5) {
+    if (decimal >= 0.75) out.push("full");
+    else if (decimal >= 0.25) out.push("half");
+  }
+  while (out.length < 5) out.push("empty");
+  return out;
+}
+
+function Stars({ stars }) {
+  return (
+    <span className="dc-stars" aria-label={`Rating ${stars.filter(s=>s!=="empty").length} out of 5`}>
+      {stars.map((t, i) => (
+        <span key={i} className={`dc-star ${t}`}>★</span>
+      ))}
+    </span>
   );
 }

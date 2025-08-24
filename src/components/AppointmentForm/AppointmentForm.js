@@ -1,7 +1,9 @@
 import React, { useMemo, useState } from "react";
 import "./AppointmentForm.css";
+// Reuse the exact DoctorCard styles
+import "../DoctorCard/doctor-card.css";
 
-export default function AppointmentForm({ isOpen, doctor, onClose, onSubmit }) {
+export default function AppointmentForm({ isOpen, doctor = {}, onClose, onSubmit }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [appointmentDate, setAppointmentDate] = useState("");
@@ -9,25 +11,37 @@ export default function AppointmentForm({ isOpen, doctor, onClose, onSubmit }) {
 
   if (!isOpen) return null;
 
+  const {
+    id = "unknown",
+    name: docName = "Dr. Jane Doe",
+    specialty = "Dermatologist",
+    experienceYears = 7,
+    rating = 4.6,
+    reviewsCount = 127,
+    avatarUrl = "",
+  } = doctor;
+
   const today = new Date().toISOString().slice(0, 10);
   const slots = useMemo(
-    () => [
-      "09:00 – 09:30",
-      "09:30 – 10:00",
-      "10:00 – 10:30",
-      "14:00 – 14:30",
-      "14:30 – 15:00",
-      "15:00 – 15:30",
-    ],
+    () => ["09:00 – 09:30", "09:30 – 10:00", "10:00 – 10:30", "14:00 – 14:30", "14:30 – 15:00", "15:00 – 15:30"],
     []
   );
 
+  // Use the same visual avatar logic as the card (blue initials circle if no photo)
+  const initials = useMemo(() => {
+    const parts = (docName || "").split(" ").filter(Boolean);
+    const first = parts[0]?.[0] || "D";
+    const last = parts[parts.length - 1]?.[0] || "R";
+    return (first + last).toUpperCase();
+  }, [docName]);
+
   const normalizeSrc = (src) => {
-    const fallback = `${process.env.PUBLIC_URL}/images/doctors/jiaoyang.png`;
-    if (!src) return fallback;
+    if (!src) return null;
     if (/^https?:\/\//i.test(src)) return src;
     return `${process.env.PUBLIC_URL}/${String(src).replace(/^\/+/, "")}`;
   };
+
+  const stars = useMemo(() => calcStars(rating), [rating]);
 
   const submit = (e) => {
     e.preventDefault();
@@ -38,8 +52,8 @@ export default function AppointmentForm({ isOpen, doctor, onClose, onSubmit }) {
 
     const payload = {
       id: crypto.randomUUID(),
-      doctorId: doctor?.id,
-      doctorName: doctor?.name,
+      doctorId: id,
+      doctorName: docName,
       name: name.trim(),
       phone: phone.trim(),
       date: appointmentDate,
@@ -48,38 +62,38 @@ export default function AppointmentForm({ isOpen, doctor, onClose, onSubmit }) {
     };
     onSubmit?.(payload);
     onClose?.();
-    setName("");
-    setPhone("");
-    setAppointmentDate("");
-    setTimeSlot("");
+    setName(""); setPhone(""); setAppointmentDate(""); setTimeSlot("");
   };
 
   return (
     <div className="booking-modal-overlay" role="dialog" aria-modal="true">
       <div className="booking-modal-card">
-        <div className="booking-modal-header">
-          <img
-            className="booking-doctor-avatar"
-            src={normalizeSrc(doctor?.avatarUrl)}
-            alt={doctor?.name || "Doctor"}
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = `${process.env.PUBLIC_URL}/images/doctors/jiaoyang.png`;
-            }}
-          />
-          <div className="booking-doc-meta">
-            <h2 className="booking-doc-name">{doctor?.name}</h2>
-            {doctor?.specialty && (
-              <div className="booking-doc-spec">{doctor.specialty}</div>
-            )}
-            {doctor?.experienceYears != null && (
-              <div className="booking-doc-exp">
-                {doctor.experienceYears} years experience
-              </div>
-            )}
-            <div className="booking-doc-rating">Ratings: ⭐⭐⭐⭐</div>
+        {/* -------- header block styled exactly like the card -------- */}
+        <div className="dc-top appt-header">
+          {normalizeSrc(avatarUrl) ? (
+            <img
+              className="dc-avatar-img"
+              src={normalizeSrc(avatarUrl)}
+              alt={docName}
+              onError={(e) => (e.currentTarget.style.display = "none")}
+            />
+          ) : (
+            <div className="dc-avatar">{initials}</div>
+          )}
+
+          <div className="dc-header">
+            <h3 className="dc-name">{docName}</h3>
+            <div className="dc-specialty">{specialty}</div>
+            <div className="dc-exp">{experienceYears} years experience</div>
           </div>
         </div>
+
+        <div className="dc-rating appt-rating">
+          <Stars stars={stars} />
+          <span className="dc-rating-num">{Number(rating || 0).toFixed(1)}</span>
+          <span className="dc-reviews">({reviewsCount} reviews)</span>
+        </div>
+        {/* ----------------------------------------------------------- */}
 
         <form className="booking-form" onSubmit={submit}>
           <div className="form-row">
@@ -127,23 +141,41 @@ export default function AppointmentForm({ isOpen, doctor, onClose, onSubmit }) {
             >
               <option value="">Select a time slot</option>
               {slots.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
+                <option key={s} value={s}>{s}</option>
               ))}
             </select>
           </div>
 
           <div className="booking-form-actions">
-            <button type="button" className="btn btn-ghost" onClick={onClose}>
-              Close
-            </button>
-            <button type="submit" className="btn btn-primary">
-              Book Now
-            </button>
+            <button type="button" className="btn btn-ghost" onClick={onClose}>Close</button>
+            <button type="submit" className="btn btn-primary">Book Now</button>
           </div>
         </form>
       </div>
     </div>
+  );
+}
+
+/* ---------- stars helpers (same logic as the card) ---------- */
+function calcStars(value) {
+  const out = [];
+  const v = Math.max(0, Math.min(5, value || 0));
+  const full = Math.floor(v);
+  const decimal = v - full;
+  for (let i = 0; i < full; i++) out.push("full");
+  if (out.length < 5) {
+    if (decimal >= 0.75) out.push("full");
+    else if (decimal >= 0.25) out.push("half");
+  }
+  while (out.length < 5) out.push("empty");
+  return out;
+}
+function Stars({ stars }) {
+  return (
+    <span className="dc-stars" aria-label={`Rating ${stars.filter(s=>s!=="empty").length} out of 5`}>
+      {stars.map((t, i) => (
+        <span key={i} className={`dc-star ${t}`}>★</span>
+      ))}
+    </span>
   );
 }

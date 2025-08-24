@@ -1,15 +1,4 @@
-:root {
-  --color-primary: #007BFF;
-  --color-accent: #9B59B6;
-  --color-danger: #FF3B30;
-  --color-bg: #F9FAFB;
-  --color-text: #111111;
-  --color-muted: #6B7280;
-  --radius: 12px;
-  --shadow: 0 18px 48px rgba(0, 0, 0, .18);
-  --font: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial;
-}
-
+/* Modal shell */
 .booking-modal-overlay {
   position: fixed;
   inset: 0;
@@ -20,45 +9,19 @@
 }
 
 .booking-modal-card {
-  width: 520px;
-  max-width: 92vw;
+  width: 680px;                /* wider so the header breathes like the card */
+  max-width: 94vw;
   background: #fff;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 20px;
-  font-family: var(--font);
+  border-radius: 18px;
+  box-shadow: 0 18px 48px rgba(15,23,42,.18);
+  padding: 18px;
 }
 
-.booking-modal-header {
-  display: grid;
-  grid-template-columns: 64px 1fr;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 10px;
-}
+/* Align the card-style header inside the modal */
+.appt-header { margin-bottom: 6px; }
+.appt-rating { margin-top: 4px; margin-bottom: 12px; }
 
-.booking-doctor-avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 9999px;
-  object-fit: cover;
-  background: #f1f5f9;
-}
-
-.booking-doc-name {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.booking-doc-spec,
-.booking-doc-exp,
-.booking-doc-rating {
-  color: var(--color-muted);
-  font-size: 14px;
-}
-
+/* Form */
 .booking-form input[type="date"],
 .booking-form select {
   display: block !important;
@@ -74,14 +37,14 @@
 .form-label {
   font-weight: 600;
   font-size: .95rem;
-  color: var(--color-text);
+  color: #0f172a;
 }
 
 .form-input {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #fff;
 }
 
@@ -94,21 +57,12 @@
 
 .btn {
   border: 0;
-  padding: 10px 14px;
-  border-radius: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
   cursor: pointer;
-  font-weight: 600;
-  font-family: var(--font);
+  font-weight: 700;
 }
 
-.btn-primary {
-  background: var(--color-primary);
-  color: #fff;
-}
-.btn-primary:hover {
-  filter: brightness(.95);
-}
-.btn-ghost {
-  background: transparent;
-  color: var(--color-primary);
-}
+.btn-primary { background: #1d4ed8; color: #fff; box-shadow: 0 4px 12px rgba(29,78,216,.25); }
+.btn-primary:hover { filter: brightness(.98); }
+.btn-ghost { background: transparent; color: #1d4ed8; }

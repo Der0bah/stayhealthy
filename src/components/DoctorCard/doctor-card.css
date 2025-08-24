@@ -1,44 +1,81 @@
-.doctor-card {
-  font-family: Poppins, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+/* Container (card) */
+.dc-card {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  padding: 18px;
+  width: 100%;
+  max-width: 540px;
+  transition: transform .12s ease, box-shadow .12s ease;
+  border: 1px solid #eef2f7;
+}
+.dc-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.12);
 }
 
-.doctor-card-header {
-  display: flex;
-  gap: 12px;
-  align-items: center;
+/* Top row: avatar + heading */
+.dc-top { display: grid; grid-template-columns: 56px 1fr; gap: 14px; align-items: center; }
+.dc-avatar {
+  width: 56px; height: 56px; border-radius: 9999px;
+  display: grid; place-items: center;
+  font-weight: 700; color: #ffffff;
+  background: radial-gradient(100% 100% at 0% 0%, #2e7cf7 0%, #1d4ed8 100%);
+}
+.dc-avatar-img {
+  width: 56px; height: 56px; border-radius: 9999px; object-fit: cover; background: #f1f5f9;
 }
 
-.doctor-card-avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 9999px;
-  object-fit: cover;
-  background: #f1f5f9;
+.dc-header { display: grid; gap: 3px; }
+.dc-name { margin: 0; font-size: 20px; font-weight: 800; color: #0f172a; }
+.dc-specialty {
+  color: #1d4ed8; font-weight: 600; text-decoration: none; cursor: default;
+}
+.dc-exp { color: #64748b; font-size: 14px; }
+
+/* Rating row */
+.dc-rating { display: flex; align-items: center; gap: 8px; margin: 12px 0 14px; }
+.dc-stars { display: inline-flex; gap: 3px; line-height: 1; }
+.dc-star { font-size: 18px; }
+.dc-star.full  { color: #f59e0b; }
+.dc-star.empty { color: #e5e7eb; }
+.dc-star.half  {
+  background: linear-gradient(90deg, #f59e0b 50%, #e5e7eb 50%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.dc-rating-num { font-weight: 700; color: #0f172a; }
+.dc-reviews { color: #94a3b8; }
+
+/* Actions */
+.dc-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.dc-btn {
+  border: 0; cursor: pointer; padding: 10px 16px; border-radius: 12px;
+  font-weight: 700; font-size: 14px;
+}
+.dc-btn-primary {
+  background: #1d4ed8; color: #fff; box-shadow: 0 4px 12px rgba(29,78,216,.25);
+}
+.dc-btn-primary:hover { filter: brightness(.98); }
+.dc-btn-outline {
+  background: #fff; color: #1d4ed8; border: 2px solid #c7d2fe;
 }
 
-.doctor-card-options-container {
-  margin-top: 8px;
-  display: flex;
-  gap: 8px;
+/* Existing appointments list (optional small) */
+.dc-appts { margin-top: 12px; }
+.dc-appts ul { list-style: none; padding: 0; margin: 6px 0 0; display: grid; gap: 6px; }
+.dc-appts li {
+  display: flex; justify-content: space-between; align-items: center;
+  background: #f8fafc; border-radius: 10px; padding: 8px 10px;
+}
+.dc-cancel {
+  background: transparent; border: 0; color: #ef4444; cursor: pointer; font-weight: 600;
 }
 
-.doctor-card-appointments {
-  margin-top: 10px;
-}
-
-.doctor-card-appointments-list {
-  list-style: none;
-  padding: 0;
-  margin: 8px 0 0;
-  display: grid;
-  gap: 6px;
-}
-
-.doctor-card-appointment-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 10px;
-  background: #F9FAFB;
-  border-radius: 8px;
+/* Small screens */
+@media (max-width: 640px) {
+  .dc-card { border-radius: 16px; padding: 16px; }
+  .dc-name { font-size: 18px; }
+  .dc-actions { gap: 10px; }
 }
