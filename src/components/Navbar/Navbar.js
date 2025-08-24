@@ -26,15 +26,35 @@ export default function Navbar() {
 
         {/* Links */}
         <nav className={`sh-links ${open ? "open" : ""}`}>
-          <NavLink to="/" end onClick={() => setOpen(false)}>Home</NavLink>
-          <NavLink to="/appointments" onClick={() => setOpen(false)}>Appointments</NavLink>
-          <NavLink to="/instant-consultation" onClick={() => setOpen(false)}>Instant Consultation</NavLink>
-          <NavLink to="/find-doctor" onClick={() => setOpen(false)}>Find Doctor</NavLink>
+          <NavLink to="/" end onClick={() => setOpen(false)}>
+            Home
+          </NavLink>
+          <NavLink to="/appointments" onClick={() => setOpen(false)}>
+            Appointments
+          </NavLink>
+          <NavLink to="/instant-consultation" onClick={() => setOpen(false)}>
+            Instant Consultation
+          </NavLink>
+          <NavLink to="/find-doctor" onClick={() => setOpen(false)}>
+            Find Doctor
+          </NavLink>
+
+          {/* ⭐ New Reviews link */}
+          <NavLink to="/reviews" onClick={() => setOpen(false)}>
+            Reviews
+          </NavLink>
 
           {/* Right cluster (auth) */}
           <div className="sh-auth">
-            <span className="sh-welcome">Welcome, <Link to="/signup" onClick={() => setOpen(false)}>signup</Link></span>
-            <Link className="sh-logout" to="/logout" onClick={() => setOpen(false)}>Logout</Link>
+            <span className="sh-welcome">
+              Welcome,{" "}
+              <Link to="/signup" onClick={() => setOpen(false)}>
+                signup
+              </Link>
+            </span>
+            <Link className="sh-logout" to="/logout" onClick={() => setOpen(false)}>
+              Logout
+            </Link>
           </div>
         </nav>
       </div>

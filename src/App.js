@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import AuthProvider from "./context/AuthContext";
@@ -18,12 +18,15 @@ import FindDoctorSearch from "./components/FindDoctorSearch/FindDoctorSearch";
 import DoctorCardsGrid from "./components/DoctorCard/DoctorCard";
 import AppointmentForm from "./components/AppointmentForm/AppointmentForm";
 
-// 🔔 Notification (global)
+// 🔔 Global Notification
 import Notification from "./components/Notification/Notification";
 import NotificationProvider from "./context/NotificationContext";
 
+// ⭐ Reviews
+import ReviewForm from "./components/ReviewForm/ReviewForm";
+
 export default function App() {
-  // Global notification state
+  // ----- global notification state -----
   const [notifyShow, setNotifyShow] = useState(false);
   const [notifyCanceled, setNotifyCanceled] = useState(false);
   const [lastBooked, setLastBooked] = useState(null);
@@ -38,13 +41,38 @@ export default function App() {
     setNotifyShow(false);
   };
 
+  // ----- Build rows for ReviewForm from saved appointments -----
+  // Reads localStorage keys that start with "appointments_"
+  const reviewRows = useMemo(() => {
+    const rows = [];
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key || !key.startsWith("appointments_")) continue;
+
+        const list = JSON.parse(localStorage.getItem(key) || "[]");
+        if (!Array.isArray(list) || list.length === 0) continue;
+
+        const latest = list[0];
+        rows.push({
+          id: String(latest.doctorId || key.replace("appointments_", "")),
+          doctorName: latest.doctorName || "Doctor",
+          specialty: latest.specialty || "—", // will be "—" if not stored
+        });
+      }
+      rows.sort((a, b) => a.doctorName.localeCompare(b.doctorName));
+    } catch {
+      /* ignore parse errors */
+    }
+    return rows;
+  }, []);
+
   return (
     <AuthProvider>
-      {/* Provide global show/hide to all children */}
       <NotificationProvider value={{ show: showNotification, hide: hideNotification }}>
         <Navbar />
 
-        {/* Global Notification: visible on every page */}
+        {/* Global toast-like notification visible on every page */}
         <Notification
           appointment={lastBooked || {}}
           show={notifyShow}
@@ -91,6 +119,9 @@ export default function App() {
             <Route path="/instant-consultation" element={<InstantConsultation />} />
             <Route path="/find-doctor" element={<FindDoctorSearch />} />
             <Route path="/doctors" element={<DoctorCardsGrid />} />
+
+            {/* ⭐ Reviews page */}
+            <Route path="/reviews" element={<ReviewForm rows={reviewRows} />} />
           </Routes>
         </main>
       </NotificationProvider>
